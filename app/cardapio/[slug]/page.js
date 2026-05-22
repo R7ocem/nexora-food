@@ -1,7 +1,7 @@
 import { query } from '../../../lib/db';
 import { money } from '../../../lib/format';
 
-async function getMenu(slug) {
+async function getEmpresa(slug) {
   const empresaResult = await query(
     `SELECT id, nome, slug, whatsapp, logo_url
      FROM food_empresas
@@ -10,7 +10,11 @@ async function getMenu(slug) {
     [slug]
   );
 
-  const empresa = empresaResult.rows[0];
+  return empresaResult.rows[0] || null;
+}
+
+async function getMenu(slug) {
+  const empresa = await getEmpresa(slug);
   if (!empresa) return null;
 
   const produtosResult = await query(
@@ -35,14 +39,30 @@ async function getMenu(slug) {
   return { empresa, produtos: produtosResult.rows };
 }
 
+export async function generateMetadata({ params }) {
+  const empresa = await getEmpresa(params.slug);
+
+  if (!empresa) {
+    return {
+      title: 'Cardápio indisponível | Nexora Food',
+      description: 'Cardápio digital'
+    };
+  }
+
+  return {
+    title: empresa.nome,
+    description: `Cardápio digital da ${empresa.nome}`
+  };
+}
+
 export default async function CardapioPage({ params }) {
   const data = await getMenu(params.slug);
 
   if (!data) {
     return (
       <main className="shell hero">
-        <h1>Cardapio indisponivel</h1>
-        <p className="muted">Nao encontramos essa empresa ou ela esta inativa.</p>
+        <h1>Cardápio indisponível</h1>
+        <p className="muted">Não encontramos essa empresa ou ela está inativa.</p>
       </main>
     );
   }
@@ -61,10 +81,16 @@ export default async function CardapioPage({ params }) {
         <div className="shell topbar-inner">
           <div className="brand">
             <strong>{data.empresa.nome}</strong>
-            <span>Cardapio digital</span>
+            <span>Cardápio digital</span>
           </div>
+
           {data.empresa.whatsapp ? (
-            <a className="button" href={`https://wa.me/${data.empresa.whatsapp}`} target="_blank" rel="noreferrer">
+            <a
+              className="button"
+              href={`https://wa.me/${data.empresa.whatsapp}`}
+              target="_blank"
+              rel="noreferrer"
+            >
               Pedir pelo WhatsApp
             </a>
           ) : null}
@@ -74,13 +100,17 @@ export default async function CardapioPage({ params }) {
       <main className="shell">
         <section className="hero">
           <h1>Escolha seu pedido</h1>
-          <p className="muted">Veja fotos, precos e descricoes. Depois envie seu pedido pelo WhatsApp.</p>
+          <p className="muted">
+            Veja fotos, preços e descrições. Depois envie seu pedido pelo WhatsApp.
+          </p>
         </section>
 
         {categorias.length ? (
           <nav className="tabs" aria-label="Categorias">
             {categorias.map((categoria) => (
-              <a className="tab" href={`#${categoria}`} key={categoria}>{categoria}</a>
+              <a className="tab" href={`#${categoria}`} key={categoria}>
+                {categoria}
+              </a>
             ))}
           </nav>
         ) : null}
@@ -88,6 +118,7 @@ export default async function CardapioPage({ params }) {
         {categorias.map((categoria) => (
           <section className="category" id={categoria} key={categoria}>
             <h2>{categoria}</h2>
+
             <div className="grid">
               {grupos[categoria].map((produto) => (
                 <article className="product" key={produto.id}>
@@ -96,9 +127,12 @@ export default async function CardapioPage({ params }) {
                   ) : (
                     <div className="image-placeholder">Sem foto</div>
                   )}
+
                   <div className="product-body">
                     <h3>{produto.nome}</h3>
-                    <p className="description">{produto.descricao || 'Produto disponivel no cardapio.'}</p>
+                    <p className="description">
+                      {produto.descricao || 'Produto disponível no cardápio.'}
+                    </p>
                     <div className="price">{money(produto.preco)}</div>
                   </div>
                 </article>
