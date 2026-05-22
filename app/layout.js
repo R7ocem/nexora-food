@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Nexora Alimentos',
-  description: 'Cardapio digital multiempresa'
+  title: 'Nexora Food',
+  description: 'Cardápio digital multiempresa'
 };
 
 export default function RootLayout({ children }) {
