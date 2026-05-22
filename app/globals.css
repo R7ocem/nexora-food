@@ -38,6 +38,11 @@ body {
   gap: 16px;
 }
 
+.brand {
+  display: grid;
+  gap: 3px;
+}
+
 .brand strong { font-size: 22px; }
 .brand span, .muted { color: var(--muted); }
 
