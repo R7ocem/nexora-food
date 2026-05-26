@@ -84,6 +84,7 @@ async function getAdminData(user, selectedSlug) {
        p.imagem_url,
        p.ativo,
        p.apelidos,
+       p.categoria_id,
        c.nome AS categoria_nome
      FROM food_produtos p
      LEFT JOIN food_categorias c ON c.id = p.categoria_id
@@ -516,23 +517,86 @@ export default async function AdminPage({ searchParams }) {
         </form>
       </section>
 
-      <section className="panel">
+           <section className="panel">
         <h2>Itens cadastrados</h2>
 
         {produtos.length === 0 ? (
           <p className="muted">Nenhum item cadastrado ainda.</p>
         ) : (
-          <div className="admin-products">
+          <div className="admin-products editable-products">
             {produtos.map((produto) => (
-              <article key={produto.id} className="admin-product-row">
-                <div>
-                  <strong>{produto.nome}</strong>
-                  <p className="muted">
-                    {produto.codigo} · {produto.categoria_nome || 'Sem categoria'} · {money(produto.preco)}
-                  </p>
-                  {produto.apelidos ? (
-                    <p className="muted">Apelidos: {produto.apelidos}</p>
-                  ) : null}
+              <form
+                key={produto.id}
+                action="/admin/products"
+                method="post"
+                className="admin-product-edit"
+              >
+                <input type="hidden" name="produto_id" value={produto.id} />
+                <input type="hidden" name="empresa_id" value={empresa.id} />
+
+                <div className="edit-grid">
+                  <label>
+                    Código
+                    <input name="codigo" defaultValue={produto.codigo || ''} required />
+                  </label>
+
+                  <label>
+                    Nome
+                    <input name="nome" defaultValue={produto.nome || ''} required />
+                  </label>
+
+                  <label>
+                    Categoria
+                    <select name="categoria_id" defaultValue={produto.categoria_id || ''}>
+                      <option value="">Sem categoria</option>
+                      {categorias.map((categoria) => (
+                        <option key={categoria.id} value={categoria.id}>
+                          {categoria.nome}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    Preço
+                    <input name="preco" defaultValue={produto.preco || '0'} />
+                  </label>
+
+                  <label className="full-span">
+                    Imagem URL
+                    <input name="imagem_url" defaultValue={produto.imagem_url || ''} />
+                  </label>
+
+                  <label className="full-span">
+                    Descrição
+                    <textarea name="descricao" defaultValue={produto.descricao || ''} />
+                  </label>
+
+                  <label className="full-span">
+                    Apelidos para o bot
+                    <input name="apelidos" defaultValue={produto.apelidos || ''} />
+                  </label>
+
+                  <label>
+                    Ativo
+                    <input name="ativo" type="checkbox" defaultChecked={produto.ativo} />
+                  </label>
+                </div>
+
+                <div className="admin-actions-row">
+                  <button className="primary-button" type="submit">
+                    Salvar alterações
+                  </button>
+
+                  <span className={produto.ativo ? 'status-pill active' : 'status-pill'}>
+                    {produto.ativo ? 'Ativo' : 'Inativo'}
+                  </span>
+                </div>
+              </form>
+            ))}
+          </div>
+        )}
+      </section>
                 </div>
 
                 <span className={produto.ativo ? 'status-pill active' : 'status-pill'}>
