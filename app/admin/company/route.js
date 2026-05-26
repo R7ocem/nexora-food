@@ -37,7 +37,13 @@ export async function POST(request) {
 
   const empresaId = Number(formData.get('empresa_id'));
   const nome = texto(formData.get('nome'));
-  const whatsapp = texto(formData.get('whatsapp')).replace(/\D/g, '');
+  const whatsappDigitado = texto(formData.get('whatsapp')).replace(/\D/g, '');
+
+  let whatsapp = whatsappDigitado;
+
+  if (whatsapp.length > 0 && !whatsapp.startsWith('55')) {
+  whatsapp = `55${whatsapp}`;
+  }
   const segmento = texto(formData.get('segmento'));
   const tipoOferta = texto(formData.get('tipo_oferta'));
   const tituloPublico = texto(formData.get('titulo_publico'));
