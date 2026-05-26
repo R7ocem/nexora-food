@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { query } from '../../../lib/db';
-import { getCurrentUser, hashPassword } from '../../../lib/auth';
+import { getCurrentUser, hashPassword, verifyPassword } from '../../../lib/auth';
 
 function texto(valor) {
   return String(valor || '').trim();
@@ -15,11 +15,26 @@ export async function POST(request) {
 
   const formData = await request.formData();
 
+  const senhaAtual = texto(formData.get('senha_atual'));
   const senhaNova = texto(formData.get('senha_nova'));
   const confirmarSenha = texto(formData.get('confirmar_senha'));
 
-  if (!senhaNova || senhaNova.length < 8 || senhaNova !== confirmarSenha) {
+  if (!senhaAtual || !senhaNova || senhaNova.length < 8 || senhaNova !== confirmarSenha) {
     redirect('/admin?erro=senha');
+  }
+
+  const usuarios = await query(
+    `SELECT id, senha_hash
+     FROM food_usuarios
+     WHERE id = $1
+     LIMIT 1`,
+    [user.id]
+  );
+
+  const usuarioAtual = usuarios.rows[0];
+
+  if (!usuarioAtual || !verifyPassword(senhaAtual, usuarioAtual.senha_hash)) {
+    redirect('/admin?erro=senha_atual');
   }
 
   const senhaHash = hashPassword(senhaNova);
