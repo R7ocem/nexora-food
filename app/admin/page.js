@@ -210,3 +210,110 @@ export default async function AdminPage({ searchParams }) {
             {empresa.bloqueado ? (
               <form action="/admin/company-status" method="post">
                 <input type="hidden" name="empresa_id" value={empresa.id} />
+                <input type="hidden" name="acao" value="desbloquear" />
+                <button className="primary-button" type="submit">
+                  Desbloquear empresa
+                </button>
+              </form>
+            ) : (
+              <form action="/admin/company-status" method="post">
+                <input type="hidden" name="empresa_id" value={empresa.id} />
+                <input type="hidden" name="acao" value="bloquear" />
+                <button className="danger-button" type="submit">
+                  Bloquear por mensalidade
+                </button>
+              </form>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="panel">
+        <h2>Novo produto</h2>
+
+        <form action="/admin/products" method="post" className="admin-form">
+          <input type="hidden" name="empresa_id" value={empresa.id} />
+
+          <label>
+            Código
+            <input name="codigo" placeholder="coxinha" required />
+          </label>
+
+          <label>
+            Nome
+            <input name="nome" placeholder="Coxinha" required />
+          </label>
+
+          <label>
+            Categoria
+            <select name="categoria_id" defaultValue="">
+              <option value="">Sem categoria</option>
+              {categorias.map((categoria) => (
+                <option key={categoria.id} value={categoria.id}>
+                  {categoria.nome}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Preço
+            <input name="preco" placeholder="8.00" required />
+          </label>
+
+          <label className="full-span">
+            Imagem URL
+            <input name="imagem_url" placeholder="https://..." />
+          </label>
+
+          <label className="full-span">
+            Descrição
+            <textarea name="descricao" placeholder="Descrição curta do produto" />
+          </label>
+
+          <label className="full-span">
+            Apelidos para o bot
+            <input name="apelidos" placeholder="coxinha, coxinhas, salgado" />
+          </label>
+
+          <label>
+            Ativo
+            <input name="ativo" type="checkbox" defaultChecked />
+          </label>
+
+          <button className="primary-button" type="submit">
+            Salvar produto
+          </button>
+        </form>
+      </section>
+
+      <section className="panel">
+        <h2>Produtos</h2>
+
+        {produtos.length === 0 ? (
+          <p className="muted">Nenhum produto cadastrado ainda.</p>
+        ) : (
+          <div className="admin-products">
+            {produtos.map((produto) => (
+              <article key={produto.id} className="admin-product-row">
+                <div>
+                  <strong>{produto.nome}</strong>
+                  <p className="muted">
+                    {produto.codigo} · {produto.categoria_nome || 'Sem categoria'} · {money(produto.preco)}
+                  </p>
+                  {produto.apelidos ? (
+                    <p className="muted">Apelidos: {produto.apelidos}</p>
+                  ) : null}
+                </div>
+
+                <span className={produto.ativo ? 'status-pill active' : 'status-pill'}>
+                  {produto.ativo ? 'Ativo' : 'Inativo'}
+                </span>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
