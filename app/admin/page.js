@@ -5,9 +5,41 @@ import { getCurrentUser } from '../../lib/auth';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const segmentos = {
+  alimentacao: 'Alimentação',
+  festas_decoracao: 'Festas e decoração',
+  moda: 'Moda',
+  beleza: 'Beleza',
+  saude: 'Saúde',
+  educacao: 'Educação',
+  servicos_gerais: 'Serviços gerais',
+  automotivo: 'Automotivo',
+  casa_construcao: 'Casa e construção',
+  tecnologia: 'Tecnologia',
+  outros: 'Outros'
+};
+
+const tiposOferta = {
+  produtos: 'Produtos',
+  servicos: 'Serviços',
+  misto: 'Produtos e serviços'
+};
+
 async function getAdminData(user, selectedSlug) {
   const empresasResult = await query(
-    `SELECT id, nome, slug, ativo, bloqueado, bloqueado_motivo
+    `SELECT
+       id,
+       nome,
+       slug,
+       ativo,
+       bloqueado,
+       bloqueado_motivo,
+       segmento,
+       tipo_oferta,
+       tema_cor,
+       logo_url,
+       titulo_publico,
+       subtitulo_publico
      FROM food_empresas
      WHERE ativo = true
      ORDER BY nome`
@@ -71,8 +103,8 @@ function Login({ erro }) {
   return (
     <main className="shell admin-shell">
       <section className="panel">
-        <h1>Painel Nexora Food</h1>
-        <p className="muted">Entre para gerenciar empresas, produtos e catálogos.</p>
+        <h1>Painel Nexora Catálogos</h1>
+        <p className="muted">Entre para gerenciar empresas, produtos, serviços e catálogos.</p>
 
         {erro ? <p className="error-text">Email ou senha inválidos.</p> : null}
 
@@ -153,17 +185,18 @@ export default async function AdminPage({ searchParams }) {
   }
 
   const isNexoraAdmin = user.papel === 'nexora_admin';
+  const nomePublico = empresa.titulo_publico || empresa.nome;
 
   return (
     <main className="shell admin-shell">
       <section className="panel admin-header-panel">
         <div>
-          <h1>{isNexoraAdmin ? 'Painel Nexora Food' : `Painel ${empresa.nome}`}</h1>
+          <h1>{isNexoraAdmin ? 'Painel Nexora Catálogos' : `Painel ${nomePublico}`}</h1>
 
           <p className="muted">
             {isNexoraAdmin
               ? 'Gerencie os catálogos das empresas clientes.'
-              : 'Gerencie produtos, serviços, fotos, preços e disponibilidade.'}
+              : 'Gerencie itens, fotos, preços e disponibilidade.'}
           </p>
 
           {empresa.bloqueado ? (
@@ -202,6 +235,23 @@ export default async function AdminPage({ searchParams }) {
             </button>
           </form>
 
+          <div className="company-summary">
+            <div>
+              <span>Segmento</span>
+              <strong>{segmentos[empresa.segmento] || empresa.segmento}</strong>
+            </div>
+
+            <div>
+              <span>Oferta</span>
+              <strong>{tiposOferta[empresa.tipo_oferta] || empresa.tipo_oferta}</strong>
+            </div>
+
+            <div>
+              <span>Link público</span>
+              <strong>/cardapio/{empresa.slug}</strong>
+            </div>
+          </div>
+
           <div className="admin-actions-row">
             {empresa.bloqueado ? (
               <form action="/admin/company-status" method="post">
@@ -225,7 +275,7 @@ export default async function AdminPage({ searchParams }) {
       ) : null}
 
       <section className="panel">
-        <h2>Novo produto</h2>
+        <h2>Novo item</h2>
 
         <form action="/admin/products" method="post" className="admin-form">
           <input type="hidden" name="empresa_id" value={empresa.id} />
@@ -278,16 +328,16 @@ export default async function AdminPage({ searchParams }) {
           </label>
 
           <button className="primary-button" type="submit">
-            Salvar produto
+            Salvar item
           </button>
         </form>
       </section>
 
       <section className="panel">
-        <h2>Produtos</h2>
+        <h2>Itens cadastrados</h2>
 
         {produtos.length === 0 ? (
-          <p className="muted">Nenhum produto cadastrado ainda.</p>
+          <p className="muted">Nenhum item cadastrado ainda.</p>
         ) : (
           <div className="admin-products">
             {produtos.map((produto) => (
