@@ -263,7 +263,7 @@ export default async function AdminPage({ searchParams }) {
 
             <label>
               WhatsApp
-              <input name="whatsapp" defaultValue={empresa.whatsapp || ''} placeholder="Somente números com DDI" />
+              <input name="whatsapp" defaultValue={empresa.whatsapp || ''} placeholder="DDD + número. Ex: 61999391859" />
             </label>
 
             <label>
