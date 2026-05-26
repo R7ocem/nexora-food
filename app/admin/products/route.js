@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { query } from '../../../lib/db';
+import { getCurrentUser } from '../../../lib/auth';
 import { slugify } from '../../../lib/format';
 
 function parsePrice(value) {
@@ -16,6 +17,9 @@ function parseAliases(value, fallback) {
 }
 
 export async function POST(request) {
+  const user = await getCurrentUser();
+  if (!user) redirect('/admin');
+
   const formData = await request.formData();
   const empresaId = Number(formData.get('empresa_id'));
   const nome = String(formData.get('nome') || '').trim();
@@ -28,6 +32,10 @@ export async function POST(request) {
   const aliases = parseAliases(formData.get('aliases'), nome.toLowerCase());
 
   if (!empresaId || !codigo || !nome) redirect('/admin');
+
+  if (user.papel !== 'nexora_admin' && Number(user.empresa_id) !== empresaId) {
+    redirect('/admin');
+  }
 
   await query(
     `INSERT INTO food_produtos (
@@ -47,5 +55,8 @@ export async function POST(request) {
     [empresaId, categoriaId, codigo, nome, descricao || null, preco, imagemUrl || null, JSON.stringify(aliases), ativo]
   );
 
-  redirect('/admin');
+  const empresa = await query(`SELECT slug FROM food_empresas WHERE id = $1 LIMIT 1`, [empresaId]);
+  const slug = empresa.rows[0]?.slug;
+
+  redirect(slug && user.papel === 'nexora_admin' ? `/admin?slug=${slug}` : '/admin');
 }
