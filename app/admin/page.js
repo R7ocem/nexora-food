@@ -191,6 +191,37 @@ export default async function AdminPage({ searchParams }) {
   return (
     <main className="shell admin-shell">
       <section className="panel admin-header-panel">
+          <section className="panel">
+        <h2>Minha senha</h2>
+
+        {searchParams?.erro === 'senha' ? (
+          <p className="error-text">
+            A nova senha precisa ter pelo menos 8 caracteres e a confirmação deve ser igual.
+          </p>
+        ) : null}
+
+        {searchParams?.senha === 'alterada' ? (
+          <p className="warning-text">
+            Senha alterada com sucesso.
+          </p>
+        ) : null}
+
+        <form action="/admin/password" method="post" className="admin-form">
+          <label>
+            Nova senha
+            <input name="senha_nova" type="password" required />
+          </label>
+
+          <label>
+            Confirmar senha
+            <input name="confirmar_senha" type="password" required />
+          </label>
+
+          <button className="secondary-button" type="submit">
+            Alterar senha
+          </button>
+        </form>
+      </section>
         <div>
           <h1>{isNexoraAdmin ? 'Painel Nexora Catálogos' : `Painel ${nomePublico}`}</h1>
 
