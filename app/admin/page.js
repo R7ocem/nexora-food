@@ -216,6 +216,59 @@ export default async function AdminPage({ searchParams }) {
 
       {isNexoraAdmin ? (
         <section className="panel">
+          <h2>Criar nova empresa</h2>
+
+          <form action="/admin/companies" method="post" className="admin-form">
+            <label>
+              Nome da empresa
+              <input name="nome" placeholder="Nome do cliente" required />
+            </label>
+
+            <label>
+              Link do catálogo
+              <input name="slug" placeholder="ex: viva-festas" />
+            </label>
+
+            <label>
+              WhatsApp
+              <input name="whatsapp" placeholder="DDD + número. Ex: 61999999999" />
+            </label>
+
+            <label>
+              Segmento
+              <select name="segmento" defaultValue="outros">
+                <option value="alimentacao">Alimentação</option>
+                <option value="festas_decoracao">Festas e decoração</option>
+                <option value="moda">Moda</option>
+                <option value="beleza">Beleza</option>
+                <option value="saude">Saúde</option>
+                <option value="educacao">Educação</option>
+                <option value="servicos_gerais">Serviços gerais</option>
+                <option value="automotivo">Automotivo</option>
+                <option value="casa_construcao">Casa e construção</option>
+                <option value="tecnologia">Tecnologia</option>
+                <option value="outros">Outros</option>
+              </select>
+            </label>
+
+            <label>
+              Tipo de oferta
+              <select name="tipo_oferta" defaultValue="produtos">
+                <option value="produtos">Produtos</option>
+                <option value="servicos">Serviços</option>
+                <option value="misto">Produtos e serviços</option>
+              </select>
+            </label>
+
+            <button className="primary-button" type="submit">
+              Criar empresa
+            </button>
+          </form>
+        </section>
+      ) : null}
+
+      {isNexoraAdmin ? (
+        <section className="panel">
           <h2>Empresa</h2>
 
           <form method="get" action="/admin" className="admin-form compact-form">
