@@ -314,3 +314,36 @@ input[type="checkbox"] {
     flex-direction: column;
   }
 }
+
+.company-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.company-summary div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fbfaf7;
+}
+
+.company-summary span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.company-summary strong {
+  display: block;
+  color: var(--text);
+}
+
+@media (max-width: 720px) {
+  .company-summary {
+    grid-template-columns: 1fr;
+  }
+}
