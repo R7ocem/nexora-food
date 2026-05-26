@@ -191,12 +191,18 @@ export default async function AdminPage({ searchParams }) {
   return (
     <main className="shell admin-shell">
       <section className="panel admin-header-panel">
-          <section className="panel">
+      <section className="panel">
         <h2>Minha senha</h2>
 
         {searchParams?.erro === 'senha' ? (
           <p className="error-text">
             A nova senha precisa ter pelo menos 8 caracteres e a confirmação deve ser igual.
+          </p>
+        ) : null}
+
+        {searchParams?.erro === 'senha_atual' ? (
+          <p className="error-text">
+            Senha atual incorreta.
           </p>
         ) : null}
 
@@ -207,6 +213,11 @@ export default async function AdminPage({ searchParams }) {
         ) : null}
 
         <form action="/admin/password" method="post" className="admin-form">
+          <label>
+            Senha atual
+            <input name="senha_atual" type="password" required />
+          </label>
+
           <label>
             Nova senha
             <input name="senha_nova" type="password" required />
