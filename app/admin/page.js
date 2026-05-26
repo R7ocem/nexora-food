@@ -31,6 +31,7 @@ async function getAdminData(user, selectedSlug) {
        id,
        nome,
        slug,
+       whatsapp,
        ativo,
        bloqueado,
        bloqueado_motivo,
@@ -262,7 +263,7 @@ export default async function AdminPage({ searchParams }) {
 
             <label>
               WhatsApp
-              <input name="whatsapp" defaultValue={empresa.whatsapp || ''} placeholder="5561999999999" />
+              <input name="whatsapp" defaultValue={empresa.whatsapp || ''} placeholder="Somente números com DDI" />
             </label>
 
             <label>
