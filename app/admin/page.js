@@ -545,12 +545,12 @@ export default async function AdminPage({ searchParams }) {
         ) : (
           <div className="admin-products editable-products">
             {produtos.map((produto) => (
-              <form
-                key={produto.id}
-                action="/admin/products"
-                method="post"
-                className="admin-product-edit"
-              >
+              <div key={produto.id} className="admin-product-edit-wrap">
+                <form
+                  action="/admin/products"
+                  method="post"
+                  className="admin-product-edit"
+                >
                 <input type="hidden" name="produto_id" value={produto.id} />
                 <input type="hidden" name="empresa_id" value={empresa.id} />
 
@@ -639,4 +639,5 @@ export default async function AdminPage({ searchParams }) {
                   Excluir item
                 </button>
               </form>
-            ))}
+             </div>
+             ))}
