@@ -179,7 +179,11 @@ export default async function CardapioPage({ params }) {
                             <p>{produto.descricao}</p>
                           ) : null}
 
-                          <strong>{money(produto.preco)}</strong>
+                          <div className="product-meta">
+                            <span>{tipoItemTexto(produto.tipo_item)}</span>
+                          </div>
+
+                          <strong>{precoTexto(produto)}</strong>
                         </div>
                       </article>
                     ))}
@@ -208,7 +212,11 @@ export default async function CardapioPage({ params }) {
                           <p>{produto.descricao}</p>
                         ) : null}
 
-                        <strong>{money(produto.preco)}</strong>
+                        <div className="product-meta">
+                          <span>{tipoItemTexto(produto.tipo_item)}</span>
+                        </div>
+
+                        <strong>{precoTexto(produto)}</strong>
                       </div>
                     </article>
                   ))}
