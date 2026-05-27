@@ -639,5 +639,11 @@ export default async function AdminPage({ searchParams }) {
                   Excluir item
                 </button>
               </form>
-             </div>
-             ))}
+            </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
