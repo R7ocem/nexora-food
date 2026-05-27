@@ -2,6 +2,18 @@ import { redirect } from 'next/navigation';
 import { query } from '../../../lib/db';
 import { getCurrentUser } from '../../../lib/auth';
 
+const tiposItemPermitidos = [
+  'produto',
+  'servico',
+  'pacote'
+];
+
+const tiposPrecoPermitidos = [
+  'fixo',
+  'a_partir_de',
+  'sob_consulta'
+];
+
 function texto(valor) {
   return String(valor || '').trim();
 }
@@ -39,10 +51,20 @@ export async function POST(request) {
   const categoriaIdRaw = texto(formData.get('categoria_id'));
   const categoriaId = categoriaIdRaw ? Number(categoriaIdRaw) : null;
   const preco = numero(formData.get('preco'));
+  const tipoItemRaw = texto(formData.get('tipo_item'));
+  const tipoPrecoRaw = texto(formData.get('tipo_preco'));
   const imagemUrl = texto(formData.get('imagem_url'));
   const descricao = texto(formData.get('descricao'));
   const apelidos = texto(formData.get('apelidos'));
   const ativo = formData.get('ativo') === 'on';
+
+  const tipoItem = tiposItemPermitidos.includes(tipoItemRaw)
+    ? tipoItemRaw
+    : 'produto';
+
+  const tipoPreco = tiposPrecoPermitidos.includes(tipoPrecoRaw)
+    ? tipoPrecoRaw
+    : 'fixo';
 
   if (!empresaId || !codigo || !nome) {
     redirect('/admin');
@@ -74,10 +96,12 @@ export async function POST(request) {
          nome = $4,
          categoria_id = $5,
          preco = $6,
-         imagem_url = $7,
-         descricao = $8,
-         apelidos = $9,
-         ativo = $10
+         tipo_item = $7,
+         tipo_preco = $8,
+         imagem_url = $9,
+         descricao = $10,
+         apelidos = $11,
+         ativo = $12
        WHERE id = $1
          AND empresa_id = $2`,
       [
@@ -87,6 +111,8 @@ export async function POST(request) {
         nome,
         categoriaId,
         preco,
+        tipoItem,
+        tipoPreco,
         imagemUrl,
         descricao,
         apelidos,
@@ -102,11 +128,13 @@ export async function POST(request) {
          nome,
          descricao,
          preco,
+         tipo_item,
+         tipo_preco,
          imagem_url,
          apelidos,
          ativo
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         empresaId,
         categoriaId,
@@ -114,6 +142,8 @@ export async function POST(request) {
         nome,
         descricao,
         preco,
+        tipoItem,
+        tipoPreco,
         imagemUrl,
         apelidos,
         ativo
