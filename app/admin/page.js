@@ -469,7 +469,7 @@ export default async function AdminPage({ searchParams }) {
          </p>
         ) : null}
 
-        <form action="/admin/products" method="post" className="admin-form">
+          <form action="/admin/products" method="post" className="admin-form product-form">
           <input type="hidden" name="empresa_id" value={empresa.id} />
 
           <label>
@@ -555,7 +555,7 @@ export default async function AdminPage({ searchParams }) {
                 <form
                   action="/admin/products"
                   method="post"
-                  className="admin-product-edit"
+                  className="admin-product-edit product-form"
                 >
                 <input type="hidden" name="produto_id" value={produto.id} />
                 <input type="hidden" name="empresa_id" value={empresa.id} />
@@ -650,6 +650,46 @@ export default async function AdminPage({ searchParams }) {
           </div>
         )}
       </section>
+      <script
+  dangerouslySetInnerHTML={{
+    __html: `
+      document.querySelectorAll('.product-form').forEach(function (form) {
+        var tipoPreco = form.querySelector('[name="tipo_preco"]');
+        var preco = form.querySelector('[name="preco"]');
+
+        if (!tipoPreco || !preco) return;
+
+        function atualizarObrigatorio() {
+          if (tipoPreco.value === 'sob_consulta') {
+            preco.required = false;
+            preco.setCustomValidity('');
+          } else {
+            preco.required = true;
+          }
+        }
+
+        tipoPreco.addEventListener('change', atualizarObrigatorio);
+
+        form.addEventListener('submit', function (event) {
+          atualizarObrigatorio();
+
+          var valor = Number(String(preco.value || '').replace(',', '.'));
+
+          if (tipoPreco.value !== 'sob_consulta' && (!preco.value || valor <= 0)) {
+            event.preventDefault();
+            preco.setCustomValidity('Informe o preço para preço fixo ou a partir de.');
+            preco.reportValidity();
+            return;
+          }
+
+          preco.setCustomValidity('');
+        });
+
+        atualizarObrigatorio();
+      });
+    `
+  }}
+/>   
     </main>
   );
 }
