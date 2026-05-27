@@ -460,8 +460,8 @@ export default async function AdminPage({ searchParams }) {
         </section>
       ) : null}
 
-        <section className="panel">
-  <h2>Categorias</h2>
+        <section className="panel" id="categorias">
+         <h2>Categorias</h2>
 
   {searchParams?.erro === 'categoria' ? (
     <p className="error-text">
@@ -538,7 +538,7 @@ export default async function AdminPage({ searchParams }) {
   )}
 </section>
 
-      <section className="panel">
+      <section className="panel" id="novo-item">
         <h2>Novo item</h2>
 
         {searchParams?.erro === 'preco' ? (
@@ -627,8 +627,8 @@ export default async function AdminPage({ searchParams }) {
         </form>
       </section>
 
-           <section className="panel">
-        <h2>Itens cadastrados</h2>
+          <section className="panel" id="itens">
+            <h2>Itens cadastrados</h2>
 
         {produtos.length === 0 ? (
           <p className="muted">Nenhum item cadastrado ainda.</p>
