@@ -490,7 +490,7 @@ export default async function AdminPage({ searchParams }) {
 
           <label>
             Preço
-            <input name="preco" placeholder="8.00" required />
+            <input name="preco" placeholder="8.00" />
           </label>
 
            <label>
