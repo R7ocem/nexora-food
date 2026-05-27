@@ -637,6 +637,4 @@ export default async function AdminPage({ searchParams }) {
       </section>
     </main>
   );
- }
-  );
 }    
