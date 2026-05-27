@@ -79,6 +79,17 @@ export async function POST(request) {
   const apelidos = texto(formData.get('apelidos'));
   const ativo = formData.get('ativo') === 'on';
 
+if (!apelidos) {
+   const empresa = await query(
+    `SELECT slug FROM food_empresas WHERE id = $1 LIMIT 1`,
+    [empresaId]
+  );
+
+  const slug = empresa.rows[0]?.slug;
+
+  redirect(slug ? `/admin?slug=${slug}&erro=apelidos` : '/admin?erro=apelidos');
+}
+
    if (!empresaId || !codigo || !nome) {
     redirect('/admin');
   }
