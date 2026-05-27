@@ -175,5 +175,5 @@ if (!apelidos) {
     );
   }
 
-  redirect(`/admin?slug=${empresaAtual.slug}`);
+  redirect(`/admin?slug=${empresaAtual.slug}#itens`);
 }
