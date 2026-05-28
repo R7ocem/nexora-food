@@ -740,98 +740,46 @@ export default async function AdminPage({ searchParams }) {
           </div>
         )}
       </section>
-      <script
-  dangerouslySetInnerHTML={{
-    __html: `
-      document.querySelectorAll('.product-form').forEach(function (form) {
-        var tipoPreco = form.querySelector('[name="tipo_preco"]');
-        var preco = form.querySelector('[name="preco"]');
+           <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            document.querySelectorAll('.product-form').forEach(function (form) {
+              var tipoPreco = form.querySelector('[name="tipo_preco"]');
+              var preco = form.querySelector('[name="preco"]');
 
-        if (!tipoPreco || !preco) return;
+              if (!tipoPreco || !preco) return;
 
-        function atualizarObrigatorio() {
-          if (tipoPreco.value === 'sob_consulta') {
-            preco.required = false;
-            preco.setCustomValidity('');
-          } else {
-            preco.required = true;
-          }
-        }
-
-        tipoPreco.addEventListener('change', atualizarObrigatorio);
-
-        form.addEventListener('submit', function (event) {
-          atualizarObrigatorio();
-
-          var valor = Number(String(preco.value || '').replace(',', '.'));
-
-          if (tipoPreco.value !== 'sob_consulta' && (!preco.value || valor <= 0)) {
-            event.preventDefault();
-            preco.setCustomValidity('Informe o preço para preço fixo ou a partir de.');
-            preco.reportValidity();
-            return;
-          }
-
-          preco.setCustomValidity('');
-        });
-
-        atualizarObrigatorio();
-
-              document.querySelectorAll('.product-form').forEach(function (form) {
-        form.addEventListener('submit', async function (event) {
-          var fileInput = form.querySelector('[name="foto"]');
-          var imageInput = form.querySelector('[name="imagem_url"]');
-          var empresaInput = form.querySelector('[name="empresa_id"]');
-
-          if (!fileInput || !imageInput || !fileInput.files || fileInput.files.length === 0) {
-            return;
-          }
-
-          event.preventDefault();
-
-          var submitButton = form.querySelector('button[type="submit"]');
-          var originalText = submitButton ? submitButton.textContent : '';
-
-          if (submitButton) {
-            submitButton.disabled = true;
-            submitButton.textContent = 'Enviando foto...';
-          }
-
-          var uploadData = new FormData();
-          uploadData.append('file', fileInput.files[0]);
-          uploadData.append('empresa_id', empresaInput ? empresaInput.value : '');
-
-          try {
-            var response = await fetch('/admin/upload', {
-              method: 'POST',
-              body: uploadData
-            });
-
-            var result = await response.json();
-
-            if (!response.ok || !result.url) {
-              alert('Não foi possível enviar a foto. Tente novamente.');
-              if (submitButton) {
-                submitButton.disabled = false;
-                submitButton.textContent = originalText;
+              function atualizarObrigatorio() {
+                if (tipoPreco.value === 'sob_consulta') {
+                  preco.required = false;
+                  preco.setCustomValidity('');
+                } else {
+                  preco.required = true;
+                }
               }
-              return;
-            }
 
-            imageInput.value = result.url;
-            fileInput.value = '';
-            form.requestSubmit();
-          } catch (error) {
-            alert('Erro ao enviar a foto. Tente novamente.');
-            if (submitButton) {
-              submitButton.disabled = false;
-              submitButton.textContent = originalText;
-            }
-          });
-       });
-     `
-  }}
-/>   
-   </main>
- );
+              tipoPreco.addEventListener('change', atualizarObrigatorio);
+
+              form.addEventListener('submit', function (event) {
+                atualizarObrigatorio();
+
+                var valor = Number(String(preco.value || '').replace(',', '.'));
+
+                if (tipoPreco.value !== 'sob_consulta' && (!preco.value || valor <= 0)) {
+                  event.preventDefault();
+                  preco.setCustomValidity('Informe o preço para preço fixo ou a partir de.');
+                  preco.reportValidity();
+                  return;
+                }
+
+                preco.setCustomValidity('');
+              });
+
+              atualizarObrigatorio();
+            });
+          `
+        }}
+      />
+    </main>
+  );
 }
