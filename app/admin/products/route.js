@@ -1,6 +1,55 @@
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { redirect } from 'next/navigation';
 import { query } from '../../../lib/db';
 import { getCurrentUser } from '../../../lib/auth';
+
+export const runtime = 'nodejs';
+
+const s3 = new S3Client({
+  region: 'auto',
+  endpoint: process.env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY
+  }
+});
+
+function limparNomeArquivo(nome) {
+  return String(nome || 'arquivo')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9.]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+async function enviarFotoParaR2(file, empresaId) {
+  if (!file || typeof file === 'string' || file.size === 0) return null;
+
+  if (!file.type.startsWith('image/')) {
+    throw new Error('invalid_file_type');
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error('file_too_large');
+  }
+
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const nomeLimpo = limparNomeArquivo(file.name);
+  const key = `empresas/${empresaId}/${Date.now()}-${nomeLimpo}`;
+
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET,
+      Key: key,
+      Body: bytes,
+      ContentType: file.type
+    })
+  );
+
+  return `${process.env.R2_PUBLIC_URL}/${key}`;
+}
 
 const tiposItemPermitidos = [
   'produto',
@@ -74,7 +123,14 @@ export async function POST(request) {
   redirect(slug ? `/admin?slug=${slug}&erro=preco` : '/admin?erro=preco');
 }
   
-  const imagemUrl = texto(formData.get('imagem_url'));
+  let imagemUrl = texto(formData.get('imagem_url'));
+const foto = formData.get('foto');
+
+const fotoUrl = await enviarFotoParaR2(foto, empresaId);
+
+if (fotoUrl) {
+  imagemUrl = fotoUrl;
+}
   const descricao = texto(formData.get('descricao'));
   const apelidos = texto(formData.get('apelidos'));
   const ativo = formData.get('ativo') === 'on';
