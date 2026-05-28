@@ -692,14 +692,36 @@ export default async function AdminPage({ searchParams }) {
                     </select>
                   </label>
 
-                  <label className="full-span">
-                    Foto do item
+                  <div className="full-span photo-editor">
+                    <span className="field-title">Foto do item</span>
+                  
                     {produto.imagem_url ? (
                       <img className="admin-image-preview" src={produto.imagem_url} alt={produto.nome} />
-                    ) : null}
-                    <input type="file" name="foto" accept="image/*" />
+                    ) : (
+                      <span className="muted">Nenhuma foto cadastrada.</span>
+                    )}
+                  
                     <input type="hidden" name="imagem_url" defaultValue={produto.imagem_url || ''} />
-                  </label>
+                    <input type="hidden" name="remover_imagem" value="0" />
+                  
+                    <div className="photo-actions">
+                      <label className="secondary-button photo-button">
+                        Trocar foto
+                        <input className="file-hidden" type="file" name="foto" accept="image/*" />
+                      </label>
+                  
+                      {produto.imagem_url ? (
+                        <button
+                          className="danger-button"
+                          type="submit"
+                          name="remover_imagem"
+                          value="1"
+                        >
+                          Excluir foto
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
                   
                   {produto.imagem_url ? (
                     <label className="checkbox-line">
