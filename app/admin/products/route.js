@@ -123,13 +123,18 @@ export async function POST(request) {
   redirect(slug ? `/admin?slug=${slug}&erro=preco` : '/admin?erro=preco');
 }
   
-  let imagemUrl = texto(formData.get('imagem_url'));
+let imagemUrl = texto(formData.get('imagem_url'));
+const removerImagem = formData.get('remover_imagem') === '1';
 const foto = formData.get('foto');
 
-const fotoUrl = await enviarFotoParaR2(foto, empresaId);
+if (removerImagem) {
+  imagemUrl = '';
+} else {
+  const fotoUrl = await enviarFotoParaR2(foto, empresaId);
 
-if (fotoUrl) {
-  imagemUrl = fotoUrl;
+  if (fotoUrl) {
+    imagemUrl = fotoUrl;
+  }
 }
   const descricao = texto(formData.get('descricao'));
   const apelidos = texto(formData.get('apelidos'));
