@@ -707,7 +707,7 @@ export default async function AdminPage({ searchParams }) {
                      <label className="secondary-button photo-button">
                       {produto.imagem_url ? 'Trocar foto' : 'Adicionar foto'}
                       <input className="file-hidden" type="file" name="foto" accept="image/*" />
-                    </label>>
+                    </label>
                   
                       {produto.imagem_url ? (
                         <button
