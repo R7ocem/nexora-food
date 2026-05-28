@@ -553,7 +553,7 @@ export default async function AdminPage({ searchParams }) {
           </p>
         ) : null}
 
-          <form action="/admin/products" method="post" className="admin-form product-form">
+          <form action="/admin/products" method="post" className="admin-form product-form" encType="multipart/form-data">
           <input type="hidden" name="empresa_id" value={empresa.id} />
 
           <label>
@@ -641,6 +641,7 @@ export default async function AdminPage({ searchParams }) {
                   action="/admin/products"
                   method="post"
                   className="admin-product-edit product-form"
+                  encType="multipart/form-data"
                 >
                 <input type="hidden" name="produto_id" value={produto.id} />
                 <input type="hidden" name="empresa_id" value={empresa.id} />
