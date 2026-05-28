@@ -704,10 +704,10 @@ export default async function AdminPage({ searchParams }) {
                     <input type="hidden" name="imagem_url" defaultValue={produto.imagem_url || ''} />
                                       
                     <div className="photo-actions">
-                      <label className="secondary-button photo-button">
-                        Trocar foto
-                        <input className="file-hidden" type="file" name="foto" accept="image/*" />
-                      </label>
+                     <label className="secondary-button photo-button">
+                      {produto.imagem_url ? 'Trocar foto' : 'Adicionar foto'}
+                      <input className="file-hidden" type="file" name="foto" accept="image/*" />
+                    </label>>
                   
                       {produto.imagem_url ? (
                         <button
