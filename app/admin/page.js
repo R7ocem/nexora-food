@@ -702,8 +702,7 @@ export default async function AdminPage({ searchParams }) {
                     )}
                   
                     <input type="hidden" name="imagem_url" defaultValue={produto.imagem_url || ''} />
-                    <input type="hidden" name="remover_imagem" value="0" />
-                  
+                                      
                     <div className="photo-actions">
                       <label className="secondary-button photo-button">
                         Trocar foto
@@ -721,15 +720,8 @@ export default async function AdminPage({ searchParams }) {
                         </button>
                       ) : null}
                     </div>
-                  </div>
+                  </div>                
                   
-                  {produto.imagem_url ? (
-                    <label className="checkbox-line">
-                      <input type="checkbox" name="remover_imagem" value="1" />
-                      Remover foto atual
-                    </label>
-                  ) : null}
-
                   <label className="full-span">
                     Descrição
                     <textarea name="descricao" defaultValue={produto.descricao || ''} />
