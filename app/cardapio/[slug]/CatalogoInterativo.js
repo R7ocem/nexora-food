@@ -230,3 +230,35 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
                   <div className="cart-quantity">
                     <button type="button" onClick={() => alterarQuantidade(item.id, item.quantidade - 1)}>
                       -
+                    </button>
+                    <span>{item.quantidade}</span>
+                    <button type="button" onClick={() => alterarQuantidade(item.id, item.quantidade + 1)}>
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {total > 0 ? (
+              <strong className="cart-total">Total aproximado: {money(total)}</strong>
+            ) : null}
+          </>
+        )}
+      </section>
+
+      <a
+        className={carrinho.length > 0 ? 'floating-whatsapp active' : 'floating-whatsapp'}
+        href={whatsappUrl}
+        target="_blank"
+        rel="noreferrer"
+        aria-disabled={carrinho.length === 0}
+        onClick={(event) => {
+          if (carrinho.length === 0) event.preventDefault();
+        }}
+      >
+        Enviar pedido
+      </a>
+    </div>
+  );
+}
