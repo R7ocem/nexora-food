@@ -3,12 +3,24 @@ import { query } from '../../../lib/db';
 
 async function getCardapio(slug) {
   const empresas = await query(
-    `SELECT id, nome, slug, whatsapp, ativo, bloqueado, bloqueado_motivo
-     FROM food_empresas
-     WHERE slug = $1
-     LIMIT 1`,
-    [slug]
-  );
+    `SELECT
+     id,
+     nome,
+     slug,
+     whatsapp,
+     ativo,
+     bloqueado,
+     bloqueado_motivo,
+     logo_url,
+     banner_url,
+     titulo_publico,
+     subtitulo_publico,
+     tema_cor
+   FROM food_empresas
+   WHERE slug = $1
+   LIMIT 1`,
+  [slug]
+);    
 
   const empresa = empresas.rows[0];
 
@@ -89,16 +101,7 @@ export default async function CardapioPage({ params }) {
       </main>
     );
   }
-
-  const whatsapp = empresa.whatsapp || '';
-  const whatsappText = encodeURIComponent(
-    `Olá! Vi o catálogo da ${empresa.nome} e quero fazer um pedido.`
-  );
-
-  const whatsappUrl = whatsapp
-    ? `https://wa.me/${whatsapp}?text=${whatsappText}`
-    : '#';
-
+  
   const produtosPorCategoria = categorias.map((categoria) => ({
     ...categoria,
     produtos: produtos.filter((produto) => produto.categoria_nome === categoria.nome)
@@ -107,45 +110,22 @@ export default async function CardapioPage({ params }) {
   const semCategoria = produtos.filter((produto) => !produto.categoria_nome);
 
   return (
-    <main>
-      <header className="menu-header">
-        <div className="menu-header-inner">
-          <div>
-            <h1>{empresa.nome}</h1>
-            <p>Catálogo digital</p>
-          </div>
-
-          {whatsapp ? (
-            <a className="primary-button" href={whatsappUrl} target="_blank">
-              Pedir pelo WhatsApp
-            </a>
-          ) : null}
+  <main>
+    <section className="shell product-list">
+      {produtos.length === 0 ? (
+        <div className="panel">
+          <h2>Catálogo em atualização</h2>
+          <p className="muted">
+            Em breve os itens estarão disponíveis por aqui.
+          </p>
         </div>
-      </header>
-
-      <section className="shell hero-section">
-        <h2>Escolha seu pedido</h2>
-        <p className="muted">
-          Veja fotos, preços e descrições. Depois envie seu pedido pelo WhatsApp.
-        </p>
-      </section>
-
-      <section className="shell product-list">
-        {produtos.length === 0 ? (
-          <div className="panel">
-            <h2>Catálogo em atualização</h2>
-            <p className="muted">
-              Em breve os itens estarão disponíveis por aqui.
-            </p>
-          </div>
-        ) : (
-          <CatalogoInterativo
-            empresa={empresa}
-            categorias={produtosPorCategoria}
-            semCategoria={semCategoria}
-          />
-        )}
-      </section>
-    </main>
-  );
-}
+      ) : (
+        <CatalogoInterativo
+          empresa={empresa}
+          categorias={produtosPorCategoria}
+          semCategoria={semCategoria}
+        />
+      )}
+    </section>
+  </main>
+);   
