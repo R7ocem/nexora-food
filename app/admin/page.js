@@ -601,11 +601,16 @@ export default async function AdminPage({ searchParams }) {
             </select>
           </label>
 
-          <label className="full-span">
-          Foto do item
-          <input type="file" name="foto" accept="image/*" />
-          <input type="hidden" name="imagem_url" />
-        </label>
+          <div className="full-span photo-editor">
+            <span className="field-title">Foto do item</span>
+          
+            <label className="photo-primary-button photo-button">
+              Adicionar foto
+              <input className="file-hidden" type="file" name="foto" accept="image/*" />
+            </label>
+          
+            <input type="hidden" name="imagem_url" />
+          </div>
 
           <label className="full-span">
             Descrição
@@ -666,7 +671,7 @@ export default async function AdminPage({ searchParams }) {
                     )}
       
                     <div className="photo-actions">
-                      <label className="secondary-button photo-button">
+                      <label className="photo-primary-button photo-button">
                         {produto.imagem_url ? 'Trocar foto' : 'Adicionar foto'}
                         <input className="file-hidden photo-auto-submit" type="file" name="foto" accept="image/*" />
                       </label>
