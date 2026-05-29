@@ -20,12 +20,14 @@ function itemTemValor(produto) {
 }
 
 function montarMensagem(empresa, itens) {
-  const linhas = itens.map((item) => {
-    const preco = itemTemValor(item)
-      ? `${item.quantidade}x ${item.nome} - ${money(Number(item.preco) * item.quantidade)}`
-      : `${item.quantidade}x ${item.nome} - Consultar valor`;
+  const nomeEmpresa = empresa.titulo_publico || empresa.nome;
 
-    return preco;
+  const linhas = itens.map((item) => {
+    if (itemTemValor(item)) {
+      return `${item.quantidade}x ${item.nome} - ${money(Number(item.preco) * item.quantidade)}`;
+    }
+
+    return `${item.quantidade}x ${item.nome} - Consultar valor`;
   });
 
   const total = itens.reduce((soma, item) => {
@@ -36,7 +38,7 @@ function montarMensagem(empresa, itens) {
   const temConsulta = itens.some((item) => !itemTemValor(item));
 
   return [
-    `Olá! Vim pelo catálogo da ${empresa.nome}.`,
+    `Olá! Vim pelo catálogo da ${nomeEmpresa}.`,
     '',
     'Meu pedido:',
     ...linhas,
@@ -50,6 +52,16 @@ function montarMensagem(empresa, itens) {
 
 export default function CatalogoInterativo({ empresa, categorias, semCategoria }) {
   const [carrinho, setCarrinho] = useState([]);
+  const nomeEmpresa = empresa.titulo_publico || empresa.nome;
+  const subtitulo = empresa.subtitulo_publico || 'Catálogo digital';
+  const corPrincipal = empresa.tema_cor || '#0f766e';
+
+  const categoriasVisiveis = [
+    ...categorias.filter((categoria) => categoria.produtos.length > 0),
+    ...(semCategoria.length > 0
+      ? [{ id: 'sem-categoria', nome: 'Produtos e serviços', produtos: semCategoria }]
+      : [])
+  ];
 
   function adicionar(produto) {
     setCarrinho((atual) => {
@@ -80,6 +92,16 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
     );
   }
 
+  function irParaCategoria(event) {
+    const id = event.target.value;
+    if (!id) return;
+
+    document.getElementById(id)?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+
   const total = useMemo(() => {
     return carrinho.reduce((soma, item) => {
       if (!itemTemValor(item)) return soma;
@@ -87,9 +109,10 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
     }, 0);
   }, [carrinho]);
 
+  const quantidadeItens = carrinho.reduce((soma, item) => soma + item.quantidade, 0);
   const whatsapp = String(empresa.whatsapp || '').replace(/\D/g, '');
   const mensagem = encodeURIComponent(montarMensagem(empresa, carrinho));
-  const whatsappUrl = whatsapp
+  const whatsappUrl = whatsapp && carrinho.length > 0
     ? `https://wa.me/${whatsapp}?text=${mensagem}`
     : '#';
 
@@ -113,7 +136,12 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
 
           <strong>{precoTexto(produto)}</strong>
 
-          <button className="primary-button product-add-button" type="button" onClick={() => adicionar(produto)}>
+          <button
+            className="primary-button product-add-button"
+            style={{ background: corPrincipal }}
+            type="button"
+            onClick={() => adicionar(produto)}
+          >
             Adicionar
           </button>
         </div>
@@ -122,30 +150,69 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
   }
 
   return (
-    <>
-      {categorias.map((categoria) =>
-        categoria.produtos.length > 0 ? (
-          <section key={categoria.id} className="category-block">
-            <h2>{categoria.nome}</h2>
+    <div className="catalog-page" style={{ '--catalog-brand': corPrincipal }}>
+      <nav className="catalog-topbar">
+        <select className="catalog-category-select" defaultValue="" onChange={irParaCategoria}>
+          <option value="">Buscar por categoria</option>
+          {categoriasVisiveis.map((categoria) => (
+            <option key={categoria.id} value={`categoria-${categoria.id}`}>
+              {categoria.nome}
+            </option>
+          ))}
+        </select>
 
-            <div className="product-grid">
-              {categoria.produtos.map(renderProduto)}
-            </div>
-          </section>
-        ) : null
-      )}
+        <div className="catalog-bag">
+          <span>Sacola</span>
+          <strong>{quantidadeItens} item{quantidadeItens === 1 ? '' : 's'}</strong>
+          <strong>{total > 0 ? money(total) : 'R$ 0,00'}</strong>
+        </div>
+      </nav>
 
-      {semCategoria.length > 0 ? (
-        <section className="category-block">
-          <h2>Produtos e serviços</h2>
+      <section className="catalog-hero">
+        {empresa.banner_url ? (
+          <img src={empresa.banner_url} alt={nomeEmpresa} />
+        ) : (
+          <div className="catalog-banner-placeholder" />
+        )}
+      </section>
+
+      <section className="catalog-brand-card">
+        <div className="catalog-logo">
+          {empresa.logo_url ? (
+            <img src={empresa.logo_url} alt={nomeEmpresa} />
+          ) : (
+            <span>{nomeEmpresa.slice(0, 1)}</span>
+          )}
+        </div>
+
+        <div>
+          <h1>{nomeEmpresa}</h1>
+          <p>{subtitulo}</p>
+        </div>
+      </section>
+
+      <section className="catalog-intro shell">
+        <h2>Escolha seu pedido</h2>
+        <p className="muted">
+          Veja fotos, preços e descrições. Depois envie seu pedido pelo WhatsApp.
+        </p>
+      </section>
+
+      {categoriasVisiveis.map((categoria) => (
+        <section
+          key={categoria.id}
+          id={`categoria-${categoria.id}`}
+          className="category-block catalog-category-block"
+        >
+          <h2>{categoria.nome}</h2>
 
           <div className="product-grid">
-            {semCategoria.map(renderProduto)}
+            {categoria.produtos.map(renderProduto)}
           </div>
         </section>
-      ) : null}
+      ))}
 
-      <section className="cart-panel">
+      <section className="cart-panel catalog-cart-panel">
         <h2>Pedido</h2>
 
         {carrinho.length === 0 ? (
@@ -163,26 +230,3 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
                   <div className="cart-quantity">
                     <button type="button" onClick={() => alterarQuantidade(item.id, item.quantidade - 1)}>
                       -
-                    </button>
-                    <span>{item.quantidade}</span>
-                    <button type="button" onClick={() => alterarQuantidade(item.id, item.quantidade + 1)}>
-                      +
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {total > 0 ? (
-              <strong className="cart-total">Total aproximado: {money(total)}</strong>
-            ) : null}
-
-            <a className="primary-button cart-whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer">
-              Enviar pelo WhatsApp
-            </a>
-          </>
-        )}
-      </section>
-    </>
-  );
-}
