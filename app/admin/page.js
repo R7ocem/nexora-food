@@ -604,10 +604,14 @@ export default async function AdminPage({ searchParams }) {
           <div className="full-span photo-editor">
             <span className="field-title">Foto do item</span>
           
+          <div className="photo-actions">
             <label className="photo-primary-button photo-button">
               Adicionar foto
-              <input className="file-hidden" type="file" name="foto" accept="image/*" />
+              <input className="file-hidden photo-file-name-input" type="file" name="foto" accept="image/*" />
             </label>
+          
+            <span className="photo-file-name muted">Nenhuma foto selecionada.</span>
+          </div>
           
             <input type="hidden" name="imagem_url" />
           </div>
@@ -840,6 +844,19 @@ export default async function AdminPage({ searchParams }) {
               });
             });
           `
+          document.querySelectorAll('.photo-file-name-input').forEach(function (input) {
+            input.addEventListener('change', function () {
+              var label = input.closest('.photo-actions')?.querySelector('.photo-file-name');
+    
+              if (!label) return;
+    
+              if (input.files && input.files.length > 0) {
+                label.textContent = 'Foto selecionada: ' + input.files[0].name;
+              } else {
+                label.textContent = 'Nenhuma foto selecionada.';
+              }
+            });
+          });
         }}
       />
     </main>
