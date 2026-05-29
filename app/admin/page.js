@@ -856,8 +856,7 @@ export default async function AdminPage({ searchParams }) {
                 label.textContent = 'Nenhuma foto selecionada.';
               }
             });
-          });
-        }}
+         }}
       />
     </main>
   );
