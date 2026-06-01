@@ -329,8 +329,8 @@ export default async function AdminPage({ searchParams }) {
         </section>
       ) : null}
 
-     <section className="panel">
-      <h2>Empresa</h2>
+     <section className="panel" id="empresa">
+        <h2>Empresa</h2>
     
       {isNexoraAdmin ? (
         <form method="get" action="/admin" className="admin-form compact-form">
