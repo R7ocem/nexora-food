@@ -74,6 +74,33 @@ async function excluirFotoDoR2(url) {
   return `${process.env.R2_PUBLIC_URL}/${key}`;
 }
 
+function keyDoR2PelaUrl(url) {
+  const publicUrl = process.env.R2_PUBLIC_URL;
+
+  if (!url || !publicUrl || !url.startsWith(publicUrl)) {
+    return null;
+  }
+
+  return url.slice(publicUrl.length + 1);
+}
+
+async function excluirFotoDoR2(url) {
+  const key = keyDoR2PelaUrl(url);
+
+  if (!key) return;
+
+  try {
+    await s3.send(
+      new DeleteObjectCommand({
+        Bucket: process.env.R2_BUCKET,
+        Key: key
+      })
+    );
+  } catch (error) {
+    console.error('Erro ao excluir foto do R2:', error);
+  }
+}
+
 const tiposItemPermitidos = [
   'produto',
   'servico',
