@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { query } from '../../../lib/db';
-import { getCurrentUser } from '../../../lib/auth';
+import { getCurrentUser, hashPassword } from '../../../lib/auth';
 
 const segmentosPermitidos = [
   'alimentacao',
@@ -50,7 +50,11 @@ export async function POST(request) {
   const segmento = texto(formData.get('segmento'));
   const tipoOferta = texto(formData.get('tipo_oferta'));
 
-  if (!nome || !slug) {
+  const usuarioNome = texto(formData.get('usuario_nome'));
+  const usuarioEmail = texto(formData.get('usuario_email')).toLowerCase();
+  const usuarioSenha = texto(formData.get('usuario_senha'));
+
+  if (!nome || !slug || !usuarioNome || !usuarioEmail || !usuarioSenha) {
     redirect('/admin?erro=empresa');
   }
 
@@ -68,7 +72,7 @@ export async function POST(request) {
     ? tipoOferta
     : 'produtos';
 
-  await query(
+  const empresaResult = await query(
     `INSERT INTO food_empresas (
        nome,
        slug,
@@ -89,15 +93,32 @@ export async function POST(request) {
        tipo_oferta = EXCLUDED.tipo_oferta,
        titulo_publico = EXCLUDED.titulo_publico,
        subtitulo_publico = EXCLUDED.subtitulo_publico,
-       ativo = true`,
-    [
-      nome,
-      slug,
-      whatsapp,
-      segmentoFinal,
-      tipoOfertaFinal
-    ]
+       ativo = true
+     RETURNING id, slug`,
+    [nome, slug, whatsapp, segmentoFinal, tipoOfertaFinal]
   );
 
-  redirect(`/admin?slug=${slug}`);
+  const empresa = empresaResult.rows[0];
+  const senhaHash = hashPassword(usuarioSenha);
+
+  await query(
+    `INSERT INTO food_usuarios (
+       empresa_id,
+       nome,
+       email,
+       senha_hash,
+       papel,
+       ativo
+     )
+     VALUES ($1, $2, $3, $4, 'empresa_admin', true)
+     ON CONFLICT (email) DO UPDATE SET
+       empresa_id = EXCLUDED.empresa_id,
+       nome = EXCLUDED.nome,
+       senha_hash = EXCLUDED.senha_hash,
+       papel = 'empresa_admin',
+       ativo = true`,
+    [empresa.id, usuarioNome, usuarioEmail, senhaHash]
+  );
+
+  redirect(`/admin?slug=${empresa.slug}`);
 }
