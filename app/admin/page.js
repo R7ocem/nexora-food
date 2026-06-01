@@ -39,6 +39,7 @@ async function getAdminData(user, selectedSlug) {
        tipo_oferta,
        tema_cor,
        logo_url,
+       banner_url,
        titulo_publico,
        subtitulo_publico,
        descricao_publica
