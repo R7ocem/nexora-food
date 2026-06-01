@@ -273,6 +273,13 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
         </div>
       ) : null}
 
+      {empresa.descricao_publica ? (
+        <section className="catalog-about shell">
+          <h2>Sobre {empresa.titulo_publico || empresa.nome}</h2>
+          <p>{empresa.descricao_publica}</p>
+        </section>
+      ) : null}
+
       <a
         className={carrinho.length > 0 ? 'floating-whatsapp active' : 'floating-whatsapp'}
         href={whatsappUrl}
