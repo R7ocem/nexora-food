@@ -1048,3 +1048,10 @@ input[type="checkbox"] {
     grid-template-columns: 1fr;
   }
 }
+
+.media-hint {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
