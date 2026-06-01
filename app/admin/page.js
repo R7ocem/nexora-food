@@ -469,8 +469,7 @@ export default async function AdminPage({ searchParams }) {
             </div>
           ) : null}
         </section>
-      ) : null}
-
+      
         <section className="panel" id="categorias">
          <h2>Categorias</h2>
 
