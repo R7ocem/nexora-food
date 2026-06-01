@@ -1,6 +1,45 @@
+import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { redirect } from 'next/navigation';
 import { query } from '../../../../lib/db';
 import { getCurrentUser } from '../../../../lib/auth';
+
+export const runtime = 'nodejs';
+
+const s3 = new S3Client({
+  region: 'auto',
+  endpoint: process.env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY
+  }
+});
+
+function keyDoR2PelaUrl(url) {
+  const publicUrl = process.env.R2_PUBLIC_URL;
+
+  if (!url || !publicUrl || !url.startsWith(publicUrl)) {
+    return null;
+  }
+
+  return url.slice(publicUrl.length + 1);
+}
+
+async function excluirFotoDoR2(url) {
+  const key = keyDoR2PelaUrl(url);
+
+  if (!key) return;
+
+  try {
+    await s3.send(
+      new DeleteObjectCommand({
+        Bucket: process.env.R2_BUCKET,
+        Key: key
+      })
+    );
+  } catch (error) {
+    console.error('Erro ao excluir foto do R2:', error);
+  }
+}
 
 export async function POST(request) {
   const user = await getCurrentUser();
@@ -36,12 +75,27 @@ export async function POST(request) {
     redirect('/admin');
   }
 
+  const produto = await query(
+    `SELECT imagem_url
+     FROM food_produtos
+     WHERE id = $1
+       AND empresa_id = $2
+     LIMIT 1`,
+    [produtoId, empresaId]
+  );
+
+  const imagemUrl = produto.rows[0]?.imagem_url;
+
   await query(
     `DELETE FROM food_produtos
      WHERE id = $1
        AND empresa_id = $2`,
     [produtoId, empresaId]
   );
+
+  if (imagemUrl) {
+    await excluirFotoDoR2(imagemUrl);
+  }
 
   redirect(`/admin?slug=${empresaAtual.slug}#itens`);
 }
