@@ -11,11 +11,11 @@ async function getCardapio(slug) {
      ativo,
      bloqueado,
      bloqueado_motivo,
-     logo_url,
-     banner_url,
      titulo_publico,
      subtitulo_publico,
-     tema_cor
+     descricao_publica,
+     tema_cor,
+     logo_url
    FROM food_empresas
    WHERE slug = $1
    LIMIT 1`,
