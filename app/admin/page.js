@@ -307,8 +307,23 @@ export default async function AdminPage({ searchParams }) {
               </select>
             </label>
 
+            <label>
+              Nome do responsável
+              <input name="usuario_nome" placeholder="Nome de quem vai acessar" required />
+            </label>
+            
+            <label>
+              Email de acesso
+              <input name="usuario_email" type="email" placeholder="cliente@email.com" required />
+            </label>
+            
+            <label>
+              Senha temporária
+              <input name="usuario_senha" type="text" placeholder="Senha inicial do cliente" required />
+            </label>
+            
             <button className="primary-button" type="submit">
-              Criar empresa
+              Criar empresa e acesso
             </button>
           </form>
         </section>
@@ -430,29 +445,6 @@ export default async function AdminPage({ searchParams }) {
               Salvar dados da empresa
             </button>
           </form>
-
-          <form action="/admin/users" method="post" className="admin-form company-user-form">
-            <input type="hidden" name="empresa_id" value={empresa.id} />
-
-            <label>
-              Nome do usuário
-              <input name="nome" placeholder="Nome do responsável" required />
-            </label>
-
-            <label>
-              Email de acesso
-              <input name="email" type="email" placeholder="cliente@email.com" required />
-            </label>
-
-            <label>
-              Senha temporária
-              <input name="senha" type="text" placeholder="Senha inicial do cliente" required />
-            </label>
-
-            <button className="primary-button" type="submit">
-              Criar acesso da empresa
-            </button>
-          </form> 
 
           {isNexoraAdmin ? (
             <div className="admin-actions-row">
