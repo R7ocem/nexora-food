@@ -1661,3 +1661,11 @@ input[type="checkbox"] {
     grid-auto-columns: 44vw;
   }
 }
+
+@media (max-width: 720px) {
+  .floating-whatsapp {
+    left: 34px;
+    right: 34px;
+    bottom: 82px;
+  }
+}
