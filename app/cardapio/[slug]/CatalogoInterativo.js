@@ -65,6 +65,10 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
       : [])
   ];
 
+  const produtosDestaque = categoriasVisiveis
+  .flatMap((categoria) => categoria.produtos)
+  .slice(0, 8);
+
   function adicionar(produto) {
     setCarrinho((atual) => {
       const existente = atual.find((item) => item.id === produto.id);
@@ -206,12 +210,28 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
         </div>
       </section>
 
-      <section className="catalog-intro shell">
+      <section className="catalog-intro shell catalog-intro-modern">
+        <span className="catalog-eyebrow">Catálogo digital</span>
         <h2>Escolha seu pedido</h2>
-        <p className="muted">
-          Veja fotos, preços e descrições. Depois envie seu pedido pelo WhatsApp.
+        <p>
+          Veja os itens disponíveis, adicione à sacola e envie seu pedido pelo WhatsApp.
         </p>
       </section>
+      
+      {produtosDestaque.length > 0 ? (
+        <section className="catalog-highlights shell">
+          <div className="section-title-row">
+            <div>
+              <span>Destaques</span>
+              <h2>Mais pedidos</h2>
+            </div>
+          </div>
+      
+          <div className="highlights-scroll">
+            {produtosDestaque.map(renderProduto)}
+          </div>
+        </section>
+      ) : null}
 
       {categoriasVisiveis.map((categoria) => (
         <section
