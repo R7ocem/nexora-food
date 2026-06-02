@@ -55,6 +55,7 @@ function montarMensagem(empresa, itens) {
   const [pedidoAberto, setPedidoAberto] = useState(false);
   const [categoriasAberto, setCategoriasAberto] = useState(false);
   const [produtoAberto, setProdutoAberto] = useState(null);
+  const categoriasRef = useRef(null);
 
   const nomeEmpresa = empresa.titulo_publico || empresa.nome;
   const subtitulo = empresa.subtitulo_publico || 'Catálogo digital';
