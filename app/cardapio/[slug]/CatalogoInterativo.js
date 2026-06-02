@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { money } from '../../../lib/format';
 
 function precoTexto(produto) {
@@ -54,6 +54,7 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
   const [carrinho, setCarrinho] = useState([]);
   const [pedidoAberto, setPedidoAberto] = useState(false);
   const [categoriasAberto, setCategoriasAberto] = useState(false);
+  const categoriasRef = useRef(null);
 
   const nomeEmpresa = empresa.titulo_publico || empresa.nome;
   const subtitulo = empresa.subtitulo_publico || 'Catálogo digital';
@@ -69,6 +70,30 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
   const produtosDestaque = categoriasVisiveis
     .flatMap((categoria) => categoria.produtos)
     .slice(0, 8);
+
+  useEffect(() => {
+  if (!categoriasAberto) return;
+
+  function fecharAoRolar() {
+    setCategoriasAberto(false);
+  }
+
+  function fecharAoClicarFora(event) {
+    if (!categoriasRef.current) return;
+
+    if (!categoriasRef.current.contains(event.target)) {
+      setCategoriasAberto(false);
+    }
+  }
+
+  window.addEventListener('scroll', fecharAoRolar, { passive: true });
+  document.addEventListener('mousedown', fecharAoClicarFora);
+
+  return () => {
+    window.removeEventListener('scroll', fecharAoRolar);
+    document.removeEventListener('mousedown', fecharAoClicarFora);
+  };
+}, [categoriasAberto]);
 
   function adicionar(produto) {
     setCarrinho((atual) => {
@@ -169,7 +194,7 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
   return (
     <div className="catalog-page" style={{ '--catalog-brand': corPrincipal }}>
       <nav className="catalog-topbar catalog-topbar-compact">
-        <div className="category-menu-wrap">
+        <div className="category-menu-wrap" ref={categoriasRef}>
           <button
             className="category-icon-button"
             type="button"
