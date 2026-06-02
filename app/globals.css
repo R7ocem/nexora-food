@@ -1752,3 +1752,86 @@ input[type="checkbox"] {
     padding-top: 12px;
   }
 }
+
+@media (min-width: 721px) {
+  .catalog-hero {
+    width: min(940px, calc(100% - 140px));
+    aspect-ratio: 16 / 5.1;
+    margin-top: 18px;
+  }
+
+  .catalog-brand-card {
+    width: min(940px, calc(100% - 140px));
+    margin-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .catalog-logo {
+    width: 64px;
+    height: 64px;
+  }
+
+  .catalog-brand-card h1 {
+    font-size: 30px;
+  }
+
+  .catalog-intro-modern {
+    padding-top: 8px;
+    padding-bottom: 6px;
+  }
+
+  .catalog-intro-modern h2 {
+    font-size: 36px;
+  }
+
+  .catalog-highlights {
+    padding-bottom: 18px;
+  }
+
+  .section-title-row h2 {
+    font-size: 26px;
+  }
+
+  .section-title-row p {
+    margin-bottom: 10px;
+  }
+
+  .highlights-scroll {
+    grid-auto-columns: 174px;
+    gap: 10px;
+    padding-bottom: 18px;
+  }
+
+  .highlight-card {
+    min-height: 274px;
+  }
+
+  .highlight-image {
+    aspect-ratio: 1 / 0.68;
+  }
+
+  .highlight-info {
+    min-height: 126px;
+    padding: 9px;
+    gap: 6px;
+  }
+
+  .highlight-info h3 {
+    min-height: 32px;
+    font-size: 14px;
+  }
+
+  .highlight-info span {
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+
+  .highlight-bottom strong {
+    font-size: 16px;
+  }
+
+  .highlight-bottom button {
+    min-height: 34px;
+    font-size: 13px;
+  }
+}
