@@ -67,8 +67,8 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
   ];
 
   const produtosDestaque = categoriasVisiveis
-  .flatMap((categoria) => categoria.produtos)
-  .slice(0, 8);
+    .flatMap((categoria) => categoria.produtos)
+    .slice(0, 8);
 
   function adicionar(produto) {
     setCarrinho((atual) => {
@@ -99,9 +99,10 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
     );
   }
 
-  function irParaCategoria(event) {
-    const id = event.target.value;
+  function irParaCategoria(id) {
     if (!id) return;
+
+    setCategoriasAberto(false);
 
     document.getElementById(id)?.scrollIntoView({
       behavior: 'smooth',
@@ -123,48 +124,51 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
     ? `https://wa.me/${whatsapp}?text=${mensagem}`
     : '#';
 
- function renderProduto(produto) {
-  const precoSobConsulta = produto.tipo_preco === 'sob_consulta';
+  function renderProduto(produto) {
+    const precoSobConsulta = produto.tipo_preco === 'sob_consulta';
+
+    return (
+      <article key={produto.id} className="product-card premium-product-card">
+        <div className="product-image-wrap">
+          {produto.imagem_url ? (
+            <img src={produto.imagem_url} alt={produto.nome} />
+          ) : (
+            <div className="product-placeholder">Sem foto</div>
+          )}
+        </div>
+
+        <div className="product-info">
+          <div className="product-title-row">
+            <h3>{produto.nome}</h3>
+            <span>{tipoItemTexto(produto.tipo_item)}</span>
+          </div>
+
+          {produto.descricao ? (
+            <p className="product-description" title={produto.descricao}>
+              {produto.descricao}
+            </p>
+          ) : null}
+
+          <div className="product-buy-row">
+            <strong>{precoTexto(produto)}</strong>
+
+            <button
+              className="primary-button product-add-button"
+              style={{ background: corPrincipal }}
+              type="button"
+              onClick={() => adicionar(produto)}
+            >
+              {precoSobConsulta ? 'Consultar' : 'Adicionar'}
+            </button>
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   return (
-    <article key={produto.id} className="product-card premium-product-card">
-      <div className="product-image-wrap">
-        {produto.imagem_url ? (
-          <img src={produto.imagem_url} alt={produto.nome} />
-        ) : (
-          <div className="product-placeholder">Sem foto</div>
-        )}
-      </div>
-
-      <div className="product-info">
-        <div className="product-title-row">
-          <h3>{produto.nome}</h3>
-          <span>{tipoItemTexto(produto.tipo_item)}</span>
-      </div>
-      
-         {produto.descricao ? (
-         <p className="product-description">{produto.descricao}</p>
-          ) : null}
-      
-              <div className="product-buy-row">
-                <strong>{precoTexto(produto)}</strong>
-      
-                <button
-                  className="primary-button product-add-button"
-                  style={{ background: corPrincipal }}
-                  type="button"
-                  onClick={() => adicionar(produto)}
-                >
-                  {precoSobConsulta ? 'Consultar' : 'Adicionar'}
-                </button>
-              </div>
-            </div>
-          </article>
-        );
-      }
-        return (
-          <div className="catalog-page" style={{ '--catalog-brand': corPrincipal }}>
-            <nav className="catalog-topbar catalog-topbar-compact">
+    <div className="catalog-page" style={{ '--catalog-brand': corPrincipal }}>
+      <nav className="catalog-topbar catalog-topbar-compact">
         <div className="category-menu-wrap">
           <button
             className="category-icon-button"
@@ -174,11 +178,11 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
           >
             <span className="category-icon-lines" />
           </button>
-      
+
           {categoriasAberto ? (
             <div className="category-popover">
               <strong>Categorias</strong>
-      
+
               {categoriasVisiveis.map((categoria) => (
                 <button
                   key={categoria.id}
@@ -191,15 +195,15 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
             </div>
           ) : null}
         </div>
-      
+
         <div className="catalog-order-summary">
           <span className="bag-icon" aria-hidden="true" />
-      
+
           <div className="catalog-order-totals">
             <strong>{quantidadeItens} item{quantidadeItens === 1 ? '' : 's'}</strong>
             <span>{total > 0 ? money(total) : 'R$ 0,00'}</span>
           </div>
-      
+
           <button type="button" onClick={() => setPedidoAberto(true)}>
             Ver pedido
           </button>
@@ -230,22 +234,17 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
       </section>
 
       <section className="catalog-intro shell catalog-intro-modern">
-        <span className="catalog-eyebrow">Catálogo digital</span>
         <h2>Escolha seu pedido</h2>
-        <p>
-          Veja os itens disponíveis, adicione à sacola e envie seu pedido pelo WhatsApp.
-        </p>
+        <p>Veja os itens disponíveis, adicione à sacola e envie seu pedido pelo WhatsApp.</p>
       </section>
-      
+
       {produtosDestaque.length > 0 ? (
         <section className="catalog-highlights shell">
           <div className="section-title-row">
-            <div>
-              <span>Destaques</span>
-              <h2>Mais pedidos</h2>
-            </div>
+            <h2>Destaques</h2>
+            <p>Itens selecionados para facilitar sua escolha.</p>
           </div>
-      
+
           <div className="highlights-scroll">
             {produtosDestaque.map(renderProduto)}
           </div>
@@ -265,6 +264,13 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
           </div>
         </section>
       ))}
+
+      {empresa.descricao_publica ? (
+        <section className="catalog-about shell">
+          <h2>Sobre {empresa.titulo_publico || empresa.nome}</h2>
+          <p>{empresa.descricao_publica}</p>
+        </section>
+      ) : null}
 
       {pedidoAberto ? (
         <div className="order-overlay" onClick={() => setPedidoAberto(false)}>
@@ -318,13 +324,6 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
         </div>
       ) : null}
 
-      {empresa.descricao_publica ? (
-        <section className="catalog-about shell">
-          <h2>Sobre {empresa.titulo_publico || empresa.nome}</h2>
-          <p>{empresa.descricao_publica}</p>
-        </section>
-      ) : null}
-
       <a
         className={carrinho.length > 0 ? 'floating-whatsapp active' : 'floating-whatsapp'}
         href={whatsappUrl}
@@ -335,7 +334,7 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
           if (carrinho.length === 0) event.preventDefault();
         }}
       >
-        Enviar pedido
+        {total > 0 ? `Enviar pedido • ${money(total)}` : 'Enviar pedido'}
       </a>
     </div>
   );
