@@ -204,6 +204,39 @@ function montarMensagem(empresa, itens) {
     );
   }
 
+    function renderDestaque(produto) {
+    const precoSobConsulta = produto.tipo_preco === 'sob_consulta';
+  
+    return (
+      <article key={produto.id} className="highlight-card">
+        <div className="highlight-image">
+          {produto.imagem_url ? (
+            <img src={produto.imagem_url} alt={produto.nome} />
+          ) : (
+            <div className="product-placeholder">Sem foto</div>
+          )}
+        </div>
+  
+        <div className="highlight-info">
+          <span>{tipoItemTexto(produto.tipo_item)}</span>
+          <h3>{produto.nome}</h3>
+  
+          <div className="highlight-bottom">
+            <strong>{precoTexto(produto)}</strong>
+  
+            <button
+              type="button"
+              style={{ background: corPrincipal }}
+              onClick={() => adicionar(produto)}
+            >
+              {precoSobConsulta ? 'Consultar' : 'Adicionar'}
+            </button>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <div className="catalog-page" style={{ '--catalog-brand': corPrincipal }}>
       <nav className="catalog-topbar catalog-topbar-compact">
@@ -284,7 +317,7 @@ function montarMensagem(empresa, itens) {
           </div>
 
           <div className="highlights-scroll">
-            {produtosDestaque.map(renderProduto)}
+            {produtosDestaque.map(renderDestaque)}
           </div>
         </section>
       ) : null}
