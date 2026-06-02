@@ -1669,3 +1669,30 @@ input[type="checkbox"] {
     bottom: 82px;
   }
 }
+
+@media (min-width: 721px) {
+  .catalog-hero {
+    width: min(980px, calc(100% - 80px));
+    height: auto;
+    aspect-ratio: 16 / 5;
+    margin-top: 22px;
+  }
+
+  .catalog-brand-card {
+    width: min(980px, calc(100% - 80px));
+    margin-top: 14px;
+    align-items: center;
+    padding-bottom: 18px;
+  }
+
+  .catalog-logo {
+    width: 72px;
+    height: 72px;
+    border-width: 3px;
+  }
+
+  .catalog-brand-card h1 {
+    font-size: 32px;
+    margin: 0 0 2px;
+  }
+}
