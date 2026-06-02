@@ -50,11 +50,11 @@ function montarMensagem(empresa, itens) {
     .join('\n');
 }
 
-export default function CatalogoInterativo({ empresa, categorias, semCategoria }) {
+ export default function CatalogoInterativo({ empresa, categorias, semCategoria }) {
   const [carrinho, setCarrinho] = useState([]);
   const [pedidoAberto, setPedidoAberto] = useState(false);
   const [categoriasAberto, setCategoriasAberto] = useState(false);
-  const categoriasRef = useRef(null);
+  const [produtoAberto, setProdutoAberto] = useState(null);
 
   const nomeEmpresa = empresa.titulo_publico || empresa.nome;
   const subtitulo = empresa.subtitulo_publico || 'Catálogo digital';
@@ -175,14 +175,26 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
           ) : null}
 
           <div className="product-buy-row">
-            <strong>{precoTexto(produto)}</strong>
-
+            <div className="product-price-line">
+              <strong>{precoTexto(produto)}</strong>
+          
+              {produto.descricao ? (
+                <button
+                  className="details-link"
+                  type="button"
+                  onClick={() => setProdutoAberto(produto)}
+                >
+                  Ver detalhes
+                </button>
+              ) : null}
+            </div>
+          
             <button
-              className="primary-button product-add-button"
-              style={{ background: corPrincipal }}
-              type="button"
-              onClick={() => adicionar(produto)}
-            >
+          className="primary-button product-add-button"
+             style={{ background: corPrincipal }}
+            type="button"
+            onClick={() => adicionar(produto)}
+          >
               {precoSobConsulta ? 'Consultar' : 'Adicionar'}
             </button>
           </div>
@@ -295,6 +307,43 @@ export default function CatalogoInterativo({ empresa, categorias, semCategoria }
           <h2>Sobre {empresa.titulo_publico || empresa.nome}</h2>
           <p>{empresa.descricao_publica}</p>
         </section>
+      ) : null}
+
+      {produtoAberto ? (
+        <div className="order-overlay" onClick={() => setProdutoAberto(null)}>
+          <aside className="product-detail-modal" onClick={(event) => event.stopPropagation()}>
+            <button className="detail-close" type="button" onClick={() => setProdutoAberto(null)}>
+              Fechar
+            </button>
+      
+            {produtoAberto.imagem_url ? (
+              <img src={produtoAberto.imagem_url} alt={produtoAberto.nome} />
+            ) : null}
+      
+            <div className="product-detail-content">
+              <span>{tipoItemTexto(produtoAberto.tipo_item)}</span>
+              <h2>{produtoAberto.nome}</h2>
+      
+              {produtoAberto.descricao ? (
+                <p>{produtoAberto.descricao}</p>
+              ) : null}
+      
+              <strong>{precoTexto(produtoAberto)}</strong>
+      
+              <button
+                className="primary-button"
+                style={{ background: corPrincipal }}
+                type="button"
+                onClick={() => {
+                  adicionar(produtoAberto);
+                  setProdutoAberto(null);
+                }}
+              >
+                {produtoAberto.tipo_preco === 'sob_consulta' ? 'Consultar' : 'Adicionar'}
+              </button>
+            </div>
+          </aside>
+        </div>
       ) : null}
 
       {pedidoAberto ? (
