@@ -56,6 +56,7 @@ function montarMensagem(empresa, itens) {
   const [categoriasAberto, setCategoriasAberto] = useState(false);
   const [produtoAberto, setProdutoAberto] = useState(null);
   const categoriasRef = useRef(null);
+  const destaquesRef = useRef(null);
 
   const nomeEmpresa = empresa.titulo_publico || empresa.nome;
   const subtitulo = empresa.subtitulo_publico || 'Catálogo digital';
@@ -316,8 +317,24 @@ function montarMensagem(empresa, itens) {
             <p>Itens selecionados para facilitar sua escolha.</p>
           </div>
 
-          <div className="highlights-scroll">
-            {produtosDestaque.map(renderDestaque)}
+          <div className="highlights-wrap">
+            <div className="highlights-scroll" ref={destaquesRef}>
+              {produtosDestaque.map(renderDestaque)}
+            </div>
+          
+            <button
+              className="highlights-next"
+              type="button"
+              aria-label="Ver mais destaques"
+              onClick={() => {
+                destaquesRef.current?.scrollBy({
+                  left: 420,
+                  behavior: 'smooth'
+                });
+              }}
+            >
+              ›
+            </button>
           </div>
         </section>
       ) : null}
