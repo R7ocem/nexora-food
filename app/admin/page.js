@@ -25,6 +25,40 @@ const tiposOferta = {
   misto: 'Produtos e serviços'
 };
 
+const diasSemana = [
+  ['0', 'Domingo'],
+  ['1', 'Segunda'],
+  ['2', 'Terça'],
+  ['3', 'Quarta'],
+  ['4', 'Quinta'],
+  ['5', 'Sexta'],
+  ['6', 'Sábado']
+];
+
+function getHorariosFuncionamento(valor) {
+  const horarios = valor && typeof valor === 'object' ? valor : {};
+
+  return diasSemana.map(([dia, nome]) => ({
+    dia,
+    nome,
+    ativo: Boolean(horarios[dia]?.ativo),
+    abre: horarios[dia]?.abre || '08:00',
+    fecha: horarios[dia]?.fecha || '18:00'
+  }));
+}
+
+function getOpcoesPedido(valor) {
+  const opcoes = valor && typeof valor === 'object' ? valor : {};
+
+  return {
+    retirada: opcoes.retirada !== false,
+    entrega: opcoes.entrega !== false,
+    pix: opcoes.pix !== false,
+    dinheiro: opcoes.dinheiro !== false,
+    cartao: opcoes.cartao !== false
+  };
+}
+
 async function getAdminData(user, selectedSlug) {
   const empresasResult = await query(
     `SELECT
@@ -38,12 +72,16 @@ async function getAdminData(user, selectedSlug) {
        segmento,
        tipo_oferta,
        tema_cor,
+       tema_cor_secundaria,
+       usar_gradiente,
        logo_url,
        banner_url,
        instagram_url,
        titulo_publico,
        subtitulo_publico,
-       descricao_publica
+       descricao_publica,
+       horario_funcionamento,
+       opcoes_pedido
      FROM food_empresas
      WHERE ativo = true
      ORDER BY nome`
@@ -88,6 +126,8 @@ async function getAdminData(user, selectedSlug) {
        p.tipo_preco,
        p.imagem_url,
        p.ativo,
+       p.destaque,
+       p.destaque_ordem,
        p.apelidos,
        p.categoria_id,
        c.nome AS categoria_nome
@@ -193,6 +233,8 @@ export default async function AdminPage({ searchParams }) {
 
   const isNexoraAdmin = user.papel === 'nexora_admin';
   const nomePublico = empresa.titulo_publico || empresa.nome;
+  const horariosFuncionamento = getHorariosFuncionamento(empresa.horario_funcionamento);
+  const opcoesPedido = getOpcoesPedido(empresa.opcoes_pedido);
 
   return (
     <main className="shell admin-shell">
@@ -265,6 +307,10 @@ export default async function AdminPage({ searchParams }) {
       {isNexoraAdmin ? (
         <section className="panel">
           <h2>Criar nova empresa</h2>
+
+          {searchParams?.erro === 'email' ? (
+            <p className="error-text">Este email já está cadastrado.</p>
+          ) : null}
 
           <form action="/admin/companies" method="post" className="admin-form">
             <label>
@@ -370,7 +416,7 @@ export default async function AdminPage({ searchParams }) {
         </div>
       </div>
     
-      <form action="/admin/company" method="post" className="admin-form company-edit-form">
+      <form id={`company-edit-form-${empresa.id}`} action="/admin/company" method="post" className="admin-form company-edit-form">
         <input type="hidden" name="empresa_id" value={empresa.id} />
     
         <label>
@@ -433,10 +479,91 @@ export default async function AdminPage({ searchParams }) {
           />
         </label>
     
-        <label>
-          Cor principal
-          <input name="tema_cor" type="color" defaultValue={empresa.tema_cor || '#0f766e'} />
-        </label>
+        <div className="full-span theme-builder">
+          <div>
+            <span className="field-title">Sistema de cores</span>
+            <small className="media-hint">Escolha duas cores para criar um visual com gradiente tecnológico no catálogo.</small>
+          </div>
+
+          <div className="theme-grid">
+            <label>
+              Cor principal
+              <input name="tema_cor" type="color" defaultValue={empresa.tema_cor || '#0f766e'} />
+            </label>
+
+            <label>
+              Cor secundária
+              <input name="tema_cor_secundaria" type="color" defaultValue={empresa.tema_cor_secundaria || '#14b8a6'} />
+            </label>
+
+            <label className="checkbox-field">
+              <input name="usar_gradiente" type="checkbox" defaultChecked={empresa.usar_gradiente !== false} />
+              Usar gradiente no catálogo
+            </label>
+          </div>
+
+          <div
+            className="theme-preview"
+            style={{
+              background: empresa.usar_gradiente === false
+                ? (empresa.tema_cor || '#0f766e')
+                : `linear-gradient(135deg, ${empresa.tema_cor || '#0f766e'}, ${empresa.tema_cor_secundaria || '#14b8a6'})`
+            }}
+          >
+            Prévia do tema
+          </div>
+        </div>
+
+        <div className="full-span admin-options-panel">
+          <span className="field-title">Horários de funcionamento</span>
+          <small className="media-hint">Marque os dias de atendimento. O catálogo mostra Aberto ou Fechado automaticamente.</small>
+
+          <div className="hours-grid">
+            {horariosFuncionamento.map((horario) => (
+              <div key={horario.dia} className="hours-row">
+                <label className="checkbox-field">
+                  <input name={`dia_${horario.dia}_ativo`} type="checkbox" defaultChecked={horario.ativo} />
+                  {horario.nome}
+                </label>
+
+                <input name={`dia_${horario.dia}_abre`} type="time" defaultValue={horario.abre} />
+                <input name={`dia_${horario.dia}_fecha`} type="time" defaultValue={horario.fecha} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="full-span admin-options-panel">
+          <span className="field-title">Opções do pedido</span>
+          <small className="media-hint">O cliente escolhe antes de enviar o pedido pelo WhatsApp.</small>
+
+          <div className="option-checks">
+            <label className="checkbox-field">
+              <input name="pedido_retirada" type="checkbox" defaultChecked={opcoesPedido.retirada} />
+              Retirada
+            </label>
+
+            <label className="checkbox-field">
+              <input name="pedido_entrega" type="checkbox" defaultChecked={opcoesPedido.entrega} />
+              Entrega
+            </label>
+
+            <label className="checkbox-field">
+              <input name="pagamento_pix" type="checkbox" defaultChecked={opcoesPedido.pix} />
+              Pix
+            </label>
+
+            <label className="checkbox-field">
+              <input name="pagamento_dinheiro" type="checkbox" defaultChecked={opcoesPedido.dinheiro} />
+              Dinheiro
+            </label>
+
+            <label className="checkbox-field">
+              <input name="pagamento_cartao" type="checkbox" defaultChecked={opcoesPedido.cartao} />
+              Cartão
+            </label>
+          </div>
+        </div>
     
              <div className="full-span company-media-grid">
         <div className="company-media-card">
@@ -524,9 +651,6 @@ export default async function AdminPage({ searchParams }) {
    </div>
  </div>
       
-         <button className="primary-button" type="submit">
-         Salvar dados da empresa
-         </button>
       </form>
 
        <form id={`company-logo-form-${empresa.id}`} action="/admin/company-media" method="post" encType="multipart/form-data">
@@ -552,9 +676,13 @@ export default async function AdminPage({ searchParams }) {
       </form>
           
 
-          {isNexoraAdmin ? (
-            <div className="admin-actions-row">
-              {empresa.bloqueado ? (
+          <div className="company-action-bar">
+            <button className="primary-button" type="submit" form={`company-edit-form-${empresa.id}`}>
+              Salvar dados da empresa
+            </button>
+
+            {isNexoraAdmin ? (
+              empresa.bloqueado ? (
                 <form action="/admin/company-status" method="post">
                   <input type="hidden" name="empresa_id" value={empresa.id} />
                   <input type="hidden" name="acao" value="desbloquear" />
@@ -570,9 +698,9 @@ export default async function AdminPage({ searchParams }) {
                     Bloquear por mensalidade
                   </button>
                 </form>
-              )}
-            </div>
-          ) : null}
+              )
+            ) : <span />}
+          </div>
         </section>
       
         <section className="panel" id="categorias">
@@ -746,6 +874,16 @@ export default async function AdminPage({ searchParams }) {
             <input name="ativo" type="checkbox" defaultChecked />
           </label>
 
+          <label className="checkbox-field">
+            <input name="destaque" type="checkbox" />
+            Mostrar nos destaques
+          </label>
+
+          <label>
+            Ordem no destaque
+            <input name="destaque_ordem" type="number" min="0" defaultValue="0" />
+          </label>
+
           <button className="primary-button" type="submit">
             Salvar item
           </button>
@@ -779,6 +917,8 @@ export default async function AdminPage({ searchParams }) {
                   <input type="hidden" name="apelidos" value={produto.apelidos || ''} />
                   <input type="hidden" name="imagem_url" value={produto.imagem_url || ''} />
                   {produto.ativo ? <input type="hidden" name="ativo" value="on" /> : null}
+                  {produto.destaque ? <input type="hidden" name="destaque" value="on" /> : null}
+                  <input type="hidden" name="destaque_ordem" value={produto.destaque_ordem || 0} />
       
                   <div className="photo-editor">
                     <span className="field-title">Foto do item</span>
@@ -881,6 +1021,16 @@ export default async function AdminPage({ searchParams }) {
                     <label>
                       Ativo
                       <input name="ativo" type="checkbox" defaultChecked={produto.ativo} />
+                    </label>
+
+                    <label className="checkbox-field">
+                      <input name="destaque" type="checkbox" defaultChecked={produto.destaque} />
+                      Mostrar nos destaques
+                    </label>
+
+                    <label>
+                      Ordem no destaque
+                      <input name="destaque_ordem" type="number" min="0" defaultValue={produto.destaque_ordem || 0} />
                     </label>
                   </div>
       

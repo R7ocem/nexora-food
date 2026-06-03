@@ -15,9 +15,13 @@ async function getCardapio(slug) {
      subtitulo_publico,
      descricao_publica,
      tema_cor,
+     tema_cor_secundaria,
+     usar_gradiente,
      logo_url,
      banner_url,
-     instagram_url
+     instagram_url,
+     horario_funcionamento,
+     opcoes_pedido
    FROM food_empresas
    WHERE slug = $1
    LIMIT 1`,
@@ -53,6 +57,8 @@ async function getCardapio(slug) {
        p.tipo_preco,
        p.imagem_url,
        p.ativo,
+       p.destaque,
+       p.destaque_ordem,
        p.apelidos,
        c.nome AS categoria_nome
      FROM food_produtos p

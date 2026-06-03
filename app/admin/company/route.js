@@ -26,6 +26,30 @@ function texto(valor) {
   return String(valor || '').trim();
 }
 
+function montarHorarios(formData) {
+  const horarios = {};
+
+  for (let dia = 0; dia <= 6; dia += 1) {
+    horarios[String(dia)] = {
+      ativo: formData.get(`dia_${dia}_ativo`) === 'on',
+      abre: texto(formData.get(`dia_${dia}_abre`)) || '08:00',
+      fecha: texto(formData.get(`dia_${dia}_fecha`)) || '18:00'
+    };
+  }
+
+  return horarios;
+}
+
+function montarOpcoesPedido(formData) {
+  return {
+    retirada: formData.get('pedido_retirada') === 'on',
+    entrega: formData.get('pedido_entrega') === 'on',
+    pix: formData.get('pagamento_pix') === 'on',
+    dinheiro: formData.get('pagamento_dinheiro') === 'on',
+    cartao: formData.get('pagamento_cartao') === 'on'
+  };
+}
+
 export async function POST(request) {
   const user = await getCurrentUser();
 
@@ -51,6 +75,10 @@ export async function POST(request) {
   const instagramUrl = texto(formData.get('instagram_url'));
   const descricaoPublica = texto(formData.get('descricao_publica'));
   const temaCor = texto(formData.get('tema_cor')) || '#0f766e';
+  const temaCorSecundaria = texto(formData.get('tema_cor_secundaria')) || '#14b8a6';
+  const usarGradiente = formData.get('usar_gradiente') === 'on';
+  const horariosFuncionamento = montarHorarios(formData);
+  const opcoesPedido = montarOpcoesPedido(formData);
 
   if (!empresaId || !nome) {
     redirect('/admin');
@@ -79,7 +107,11 @@ export async function POST(request) {
        subtitulo_publico = $7,
        instagram_url = $8,
        descricao_publica = $9,
-       tema_cor = $10
+       tema_cor = $10,
+       tema_cor_secundaria = $11,
+       usar_gradiente = $12,
+       horario_funcionamento = $13,
+       opcoes_pedido = $14
       WHERE id = $1`,
     [
       empresaId,
@@ -91,7 +123,11 @@ export async function POST(request) {
       subtituloPublico,
       instagramUrl,
       descricaoPublica,
-      temaCor
+      temaCor,
+      temaCorSecundaria,
+      usarGradiente,
+      JSON.stringify(horariosFuncionamento),
+      JSON.stringify(opcoesPedido)
     ]
   );
 
