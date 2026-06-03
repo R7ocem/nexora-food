@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS food_empresas (
   nome TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
   whatsapp TEXT,
+  instagram_url TEXT,
   logo_url TEXT,
   ativo BOOLEAN NOT NULL DEFAULT true,
   criado_em TIMESTAMP DEFAULT NOW(),
@@ -34,6 +35,9 @@ CREATE TABLE IF NOT EXISTS food_produtos (
   atualizado_em TIMESTAMP DEFAULT NOW(),
   UNIQUE (empresa_id, codigo)
 );
+
+ALTER TABLE food_empresas
+ADD COLUMN IF NOT EXISTS instagram_url TEXT;
 
 INSERT INTO food_empresas (nome, slug, whatsapp, ativo)
 VALUES ('Savore Gourmet', 'savore', '556199327471', true)

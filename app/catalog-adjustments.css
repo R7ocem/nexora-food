@@ -1,0 +1,112 @@
+.catalog-brand-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.catalog-instagram-link {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.1);
+  color: var(--catalog-brand);
+  text-decoration: none;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.catalog-instagram-link:hover {
+  background: var(--catalog-brand);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.catalog-instagram-link svg {
+  width: 19px;
+  height: 19px;
+  display: block;
+}
+
+.highlights-wrap {
+  padding-inline: 10px;
+}
+
+.highlights-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(33, 31, 28, 0.1) transparent;
+}
+
+.highlights-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.highlights-scroll::-webkit-scrollbar-thumb {
+  background: rgba(33, 31, 28, 0.11);
+}
+
+.highlights-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(33, 31, 28, 0.18);
+}
+
+.highlights-arrow {
+  background: rgba(255, 255, 255, 0.68);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 160ms ease, transform 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.highlights-wrap:hover .highlights-arrow,
+.highlights-wrap:focus-within .highlights-arrow {
+  opacity: 0.72;
+  transform: translateY(0);
+}
+
+.highlights-arrow:hover,
+.highlights-arrow:focus-visible {
+  opacity: 0.96;
+}
+
+@media (min-width: 721px) {
+  .catalog-brand-card {
+    padding-bottom: 22px;
+  }
+
+  .catalog-highlights {
+    padding-top: 10px;
+  }
+}
+
+@media (max-width: 720px) {
+  .catalog-hero {
+    margin-top: 14px;
+  }
+
+  .catalog-brand-card {
+    margin-top: 12px;
+  }
+
+  .catalog-brand-title-row {
+    gap: 8px;
+  }
+
+  .catalog-instagram-link {
+    width: 32px;
+    height: 32px;
+  }
+
+  .catalog-highlights {
+    padding-top: 6px;
+    padding-bottom: 18px;
+  }
+
+  .catalog-category-block {
+    padding-top: 2px;
+  }
+
+  .floating-whatsapp {
+    bottom: max(10px, env(safe-area-inset-bottom));
+  }
+}

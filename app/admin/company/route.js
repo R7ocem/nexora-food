@@ -29,7 +29,7 @@ function texto(valor) {
 export async function POST(request) {
   const user = await getCurrentUser();
 
-  if (!user || user.papel !== 'nexora_admin') {
+  if (!user) {
     redirect('/admin');
   }
 
@@ -48,12 +48,15 @@ export async function POST(request) {
   const tipoOferta = texto(formData.get('tipo_oferta'));
   const tituloPublico = texto(formData.get('titulo_publico'));
   const subtituloPublico = texto(formData.get('subtitulo_publico'));
+  const instagramUrl = texto(formData.get('instagram_url'));
   const descricaoPublica = texto(formData.get('descricao_publica'));
   const temaCor = texto(formData.get('tema_cor')) || '#0f766e';
-  const logoUrl = texto(formData.get('logo_url'));
-  const bannerUrl = texto(formData.get('banner_url'));
 
   if (!empresaId || !nome) {
+    redirect('/admin');
+  }
+
+  if (user.papel !== 'nexora_admin' && user.empresa_id !== empresaId) {
     redirect('/admin');
   }
 
@@ -74,10 +77,9 @@ export async function POST(request) {
        tipo_oferta = $5,
        titulo_publico = $6,
        subtitulo_publico = $7,
-       descricao_publica = $8,
-       tema_cor = $9,
-       logo_url = $10
-       banner_url = $11
+       instagram_url = $8,
+       descricao_publica = $9,
+       tema_cor = $10
       WHERE id = $1`,
     [
       empresaId,
@@ -87,10 +89,9 @@ export async function POST(request) {
       tipoOfertaFinal,
       tituloPublico || nome,
       subtituloPublico,
+      instagramUrl,
       descricaoPublica,
-      temaCor,
-      logoUrl,
-      bannerUrl
+      temaCor
     ]
   );
 

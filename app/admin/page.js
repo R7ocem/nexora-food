@@ -40,6 +40,7 @@ async function getAdminData(user, selectedSlug) {
        tema_cor,
        logo_url,
        banner_url,
+       instagram_url,
        titulo_publico,
        subtitulo_publico,
        descricao_publica
@@ -416,6 +417,11 @@ export default async function AdminPage({ searchParams }) {
         <label>
           Subtítulo público
           <input name="subtitulo_publico" defaultValue={empresa.subtitulo_publico || ''} />
+        </label>
+
+        <label>
+          Instagram
+          <input name="instagram_url" defaultValue={empresa.instagram_url || ''} placeholder="@sua_loja ou link completo" />
         </label>
     
         <label className="full-span">
