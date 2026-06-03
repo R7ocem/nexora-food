@@ -286,7 +286,11 @@
 }
 
 .catalog-bg-escuro .catalog-brand-card {
-  align-items: center;
+  align-items: flex-start;
+}
+
+.catalog-bg-escuro .catalog-logo {
+  margin-top: 2px;
 }
 
 .catalog-hero,
@@ -566,6 +570,14 @@
 
   .catalog-brand-card {
     margin-top: 12px;
+  }
+
+  .catalog-bg-escuro .catalog-brand-card {
+    align-items: flex-start;
+  }
+
+  .catalog-bg-escuro .catalog-logo {
+    margin-top: 1px;
   }
 
   .catalog-brand-title-row {
