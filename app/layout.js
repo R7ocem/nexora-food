@@ -1,4 +1,5 @@
 import './globals.css';
+import './catalog-adjustments.css';
 
 export const metadata = {
   title: 'Nexora Food',

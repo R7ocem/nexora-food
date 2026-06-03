@@ -50,6 +50,21 @@ function montarMensagem(empresa, itens) {
     .join('\n');
 }
 
+function normalizarInstagramUrl(valor) {
+  const instagram = String(valor || '').trim();
+
+  if (!instagram) return '';
+  if (/^https?:\/\//i.test(instagram)) return instagram;
+
+  const semArroba = instagram.replace(/^@+/, '');
+
+  if (semArroba.includes('instagram.com')) {
+    return `https://${semArroba}`;
+  }
+
+  return `https://instagram.com/${semArroba.replace(/^\/+/, '')}`;
+}
+
  export default function CatalogoInterativo({ empresa, categorias, semCategoria }) {
   const [carrinho, setCarrinho] = useState([]);
   const [pedidoAberto, setPedidoAberto] = useState(false);
@@ -61,6 +76,7 @@ function montarMensagem(empresa, itens) {
   const nomeEmpresa = empresa.titulo_publico || empresa.nome;
   const subtitulo = empresa.subtitulo_publico || 'Catálogo digital';
   const corPrincipal = empresa.tema_cor || '#0f766e';
+  const instagramUrl = normalizarInstagramUrl(empresa.instagram_url);
 
   const categoriasVisiveis = [
     ...categorias.filter((categoria) => categoria.produtos.length > 0),
@@ -300,7 +316,26 @@ function montarMensagem(empresa, itens) {
         </div>
 
         <div>
-          <h1>{nomeEmpresa}</h1>
+          <div className="catalog-brand-title-row">
+            <h1>{nomeEmpresa}</h1>
+
+            {instagramUrl ? (
+              <a
+                className="catalog-instagram-link"
+                href={instagramUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Instagram ${nomeEmpresa}`}
+                title={`Instagram ${nomeEmpresa}`}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" strokeWidth="2" />
+                  <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="2" />
+                  <circle cx="17.5" cy="6.5" r="1.3" fill="currentColor" />
+                </svg>
+              </a>
+            ) : null}
+          </div>
           <p>{subtitulo}</p>
         </div>
       </section>
