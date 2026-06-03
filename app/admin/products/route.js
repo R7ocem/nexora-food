@@ -198,6 +198,8 @@ export async function POST(request) {
   const descricao = texto(formData.get('descricao'));
   const apelidos = texto(formData.get('apelidos'));
   const ativo = formData.get('ativo') === 'on';
+  const destaque = formData.get('destaque') === 'on';
+  const destaqueOrdem = Math.max(0, Math.round(numero(formData.get('destaque_ordem'))));
 
 if (!apelidos) {
    const empresa = await query(
@@ -245,7 +247,9 @@ if (!apelidos) {
          imagem_url = $9,
          descricao = $10,
          apelidos = $11,
-         ativo = $12
+         ativo = $12,
+         destaque = $13,
+         destaque_ordem = $14
        WHERE id = $1
          AND empresa_id = $2`,
       [
@@ -260,7 +264,9 @@ if (!apelidos) {
         imagemUrl,
         descricao,
         apelidos,
-        ativo
+        ativo,
+        destaque,
+        destaqueOrdem
       ]
     );
   } else {
@@ -276,9 +282,11 @@ if (!apelidos) {
          tipo_preco,
          imagem_url,
          apelidos,
-         ativo
+         ativo,
+         destaque,
+         destaque_ordem
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
       [
         empresaId,
         categoriaId,
@@ -290,7 +298,9 @@ if (!apelidos) {
         tipoPreco,
         imagemUrl,
         apelidos,
-        ativo
+        ativo,
+        destaque,
+        destaqueOrdem
       ]
     );
   }

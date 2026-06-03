@@ -19,7 +19,7 @@ function itemTemValor(produto) {
   return produto.tipo_preco !== 'sob_consulta';
 }
 
-function montarMensagem(empresa, itens) {
+function montarMensagem(empresa, itens, detalhesPedido) {
   const nomeEmpresa = empresa.titulo_publico || empresa.nome;
 
   const linhas = itens.map((item) => {
@@ -43,6 +43,9 @@ function montarMensagem(empresa, itens) {
     'Meu pedido:',
     ...linhas,
     '',
+    detalhesPedido?.tipoEntrega ? `Forma de recebimento: ${detalhesPedido.tipoEntrega}` : null,
+    detalhesPedido?.pagamento ? `Pagamento: ${detalhesPedido.pagamento}` : null,
+    '',
     total > 0 ? `Total aproximado: ${money(total)}` : null,
     temConsulta ? 'Alguns itens estão sob consulta.' : null
   ]
@@ -65,18 +68,74 @@ function normalizarInstagramUrl(valor) {
   return `https://instagram.com/${semArroba.replace(/^\/+/, '')}`;
 }
 
+function valorJson(valor, fallback) {
+  if (!valor) return fallback;
+  if (typeof valor === 'object') return valor;
+
+  try {
+    return JSON.parse(valor);
+  } catch {
+    return fallback;
+  }
+}
+
+function getOpcoesPedido(valor) {
+  const opcoes = valorJson(valor, {});
+
+  return {
+    tiposEntrega: [
+      opcoes.retirada !== false ? 'Retirada' : null,
+      opcoes.entrega !== false ? 'Entrega' : null
+    ].filter(Boolean),
+    pagamentos: [
+      opcoes.pix !== false ? 'Pix' : null,
+      opcoes.dinheiro !== false ? 'Dinheiro' : null,
+      opcoes.cartao !== false ? 'Cartão' : null
+    ].filter(Boolean)
+  };
+}
+
+function estaAbertoAgora(valor) {
+  const horarios = valorJson(valor, {});
+  const agora = new Date();
+  const dia = String(agora.getDay());
+  const hoje = horarios[dia];
+
+  if (!hoje?.ativo || !hoje.abre || !hoje.fecha) return false;
+
+  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+  const [abreHora, abreMinuto] = String(hoje.abre).split(':').map(Number);
+  const [fechaHora, fechaMinuto] = String(hoje.fecha).split(':').map(Number);
+  const minutosAbre = abreHora * 60 + abreMinuto;
+  const minutosFecha = fechaHora * 60 + fechaMinuto;
+
+  if (!Number.isFinite(minutosAbre) || !Number.isFinite(minutosFecha)) return false;
+
+  if (minutosFecha < minutosAbre) {
+    return minutosAgora >= minutosAbre || minutosAgora <= minutosFecha;
+  }
+
+  return minutosAgora >= minutosAbre && minutosAgora <= minutosFecha;
+}
+
  export default function CatalogoInterativo({ empresa, categorias, semCategoria }) {
   const [carrinho, setCarrinho] = useState([]);
   const [pedidoAberto, setPedidoAberto] = useState(false);
   const [categoriasAberto, setCategoriasAberto] = useState(false);
   const [produtoAberto, setProdutoAberto] = useState(null);
+  const [tipoEntrega, setTipoEntrega] = useState('');
+  const [pagamento, setPagamento] = useState('');
   const categoriasRef = useRef(null);
   const destaquesRef = useRef(null);
 
   const nomeEmpresa = empresa.titulo_publico || empresa.nome;
   const subtitulo = empresa.subtitulo_publico || 'Catálogo digital';
   const corPrincipal = empresa.tema_cor || '#0f766e';
+  const corSecundaria = empresa.tema_cor_secundaria || '#14b8a6';
+  const usarGradiente = empresa.usar_gradiente !== false;
   const instagramUrl = normalizarInstagramUrl(empresa.instagram_url);
+  const estabelecimentoAberto = estaAbertoAgora(empresa.horario_funcionamento);
+  const opcoesPedido = getOpcoesPedido(empresa.opcoes_pedido);
 
   const categoriasVisiveis = [
     ...categorias.filter((categoria) => categoria.produtos.length > 0),
@@ -85,9 +144,18 @@ function normalizarInstagramUrl(valor) {
       : [])
   ];
 
-  const produtosDestaque = categoriasVisiveis
+  const todosProdutosVisiveis = categoriasVisiveis
     .flatMap((categoria) => categoria.produtos)
-    .slice(0, 8);
+    .filter((produto) => produto.ativo !== false);
+
+  const produtosEscolhidosDestaque = todosProdutosVisiveis
+    .filter((produto) => produto.destaque)
+    .sort((a, b) => (Number(a.destaque_ordem || 0) - Number(b.destaque_ordem || 0)) || a.nome.localeCompare(b.nome));
+
+  const produtosDestaque = (produtosEscolhidosDestaque.length > 0
+    ? produtosEscolhidosDestaque
+    : todosProdutosVisiveis
+  ).slice(0, 8);
 
   useEffect(() => {
   if (!categoriasAberto) return;
@@ -162,7 +230,12 @@ function normalizarInstagramUrl(valor) {
 
   const quantidadeItens = carrinho.reduce((soma, item) => soma + item.quantidade, 0);
   const whatsapp = String(empresa.whatsapp || '').replace(/\D/g, '');
-  const mensagem = encodeURIComponent(montarMensagem(empresa, carrinho));
+  const precisaTipoEntrega = opcoesPedido.tiposEntrega.length > 0;
+  const precisaPagamento = opcoesPedido.pagamentos.length > 0;
+  const pedidoPodeEnviar = carrinho.length > 0
+    && (!precisaTipoEntrega || tipoEntrega)
+    && (!precisaPagamento || pagamento);
+  const mensagem = encodeURIComponent(montarMensagem(empresa, carrinho, { tipoEntrega, pagamento }));
   const whatsappUrl = whatsapp && carrinho.length > 0
     ? `https://wa.me/${whatsapp}?text=${mensagem}`
     : '#';
@@ -209,7 +282,7 @@ function normalizarInstagramUrl(valor) {
           
             <button
           className="primary-button product-add-button"
-             style={{ background: corPrincipal }}
+             style={{ background: usarGradiente ? 'var(--catalog-gradient)' : corPrincipal }}
             type="button"
             onClick={() => adicionar(produto)}
           >
@@ -243,7 +316,7 @@ function normalizarInstagramUrl(valor) {
   
             <button
               type="button"
-              style={{ background: corPrincipal }}
+              style={{ background: usarGradiente ? 'var(--catalog-gradient)' : corPrincipal }}
               onClick={() => adicionar(produto)}
             >
               {precoSobConsulta ? 'Consultar' : 'Adicionar'}
@@ -255,7 +328,16 @@ function normalizarInstagramUrl(valor) {
   }
 
   return (
-    <div className="catalog-page" style={{ '--catalog-brand': corPrincipal }}>
+    <div
+      className="catalog-page"
+      style={{
+        '--catalog-brand': corPrincipal,
+        '--catalog-brand-2': corSecundaria,
+        '--catalog-gradient': usarGradiente
+          ? `linear-gradient(135deg, ${corPrincipal}, ${corSecundaria})`
+          : corPrincipal
+      }}
+    >
       <nav className="catalog-topbar catalog-topbar-compact">
         <div className="category-menu-wrap" ref={categoriasRef}>
           <button
@@ -337,6 +419,9 @@ function normalizarInstagramUrl(valor) {
             ) : null}
           </div>
           <p>{subtitulo}</p>
+          <span className={estabelecimentoAberto ? 'open-status open' : 'open-status closed'}>
+            {estabelecimentoAberto ? 'Aberto' : 'Fechado'}
+          </span>
         </div>
       </section>
           
@@ -427,7 +512,7 @@ function normalizarInstagramUrl(valor) {
       
               <button
                 className="primary-button"
-                style={{ background: corPrincipal }}
+                style={{ background: usarGradiente ? 'var(--catalog-gradient)' : corPrincipal }}
                 type="button"
                 onClick={() => {
                   adicionar(produtoAberto);
@@ -459,6 +544,11 @@ function normalizarInstagramUrl(valor) {
               <p className="muted">Nenhum item adicionado ainda.</p>
             ) : (
               <>
+                <div className="order-total-card">
+                  <span>Total aproximado</span>
+                  <strong>{total > 0 ? money(total) : 'Consultar valor'}</strong>
+                </div>
+
                 <div className="cart-items order-cart-items">
                   {carrinho.map((item) => (
                     <div key={item.id} className="cart-item">
@@ -480,11 +570,52 @@ function normalizarInstagramUrl(valor) {
                   ))}
                 </div>
 
-                {total > 0 ? (
-                  <strong className="cart-total">Total aproximado: {money(total)}</strong>
+                {opcoesPedido.tiposEntrega.length > 0 ? (
+                  <div className="order-choice-group">
+                    <strong>Recebimento</strong>
+                    <div className="choice-buttons">
+                      {opcoesPedido.tiposEntrega.map((opcao) => (
+                        <button
+                          key={opcao}
+                          type="button"
+                          className={tipoEntrega === opcao ? 'choice-button active' : 'choice-button'}
+                          onClick={() => setTipoEntrega(opcao)}
+                        >
+                          {opcao}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ) : null}
 
-                <a className="primary-button order-whatsapp-button" href={whatsappUrl} target="_blank" rel="noreferrer">
+                {opcoesPedido.pagamentos.length > 0 ? (
+                  <div className="order-choice-group">
+                    <strong>Pagamento</strong>
+                    <div className="choice-buttons">
+                      {opcoesPedido.pagamentos.map((opcao) => (
+                        <button
+                          key={opcao}
+                          type="button"
+                          className={pagamento === opcao ? 'choice-button active' : 'choice-button'}
+                          onClick={() => setPagamento(opcao)}
+                        >
+                          {opcao}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                <a
+                  className={pedidoPodeEnviar ? 'primary-button order-whatsapp-button' : 'primary-button order-whatsapp-button disabled'}
+                  href={pedidoPodeEnviar ? whatsappUrl : '#'}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-disabled={!pedidoPodeEnviar}
+                  onClick={(event) => {
+                    if (!pedidoPodeEnviar) event.preventDefault();
+                  }}
+                >
                   Enviar pelo WhatsApp
                 </a>
               </>
@@ -493,18 +624,21 @@ function normalizarInstagramUrl(valor) {
         </div>
       ) : null}
 
-      <a
+      <button
         className={carrinho.length > 0 ? 'floating-whatsapp active' : 'floating-whatsapp'}
-        href={whatsappUrl}
-        target="_blank"
-        rel="noreferrer"
+        type="button"
         aria-disabled={carrinho.length === 0}
-        onClick={(event) => {
-          if (carrinho.length === 0) event.preventDefault();
+        onClick={() => {
+          if (carrinho.length > 0) setPedidoAberto(true);
         }}
       >
         {total > 0 ? `Enviar pedido • ${money(total)}` : 'Enviar pedido'}
-      </a>
+      </button>
+
+      <footer className="catalog-footer">
+        <span>Criado por</span>
+        <strong className="nexora-wordmark">Nexora</strong>
+      </footer>
     </div>
   );
 }

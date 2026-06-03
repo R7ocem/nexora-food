@@ -58,6 +58,15 @@ export async function POST(request) {
     redirect('/admin?erro=empresa');
   }
 
+  const emailExistente = await query(
+    `SELECT id FROM food_usuarios WHERE email = $1 LIMIT 1`,
+    [usuarioEmail]
+  );
+
+  if (emailExistente.rows.length > 0) {
+    redirect('/admin?erro=email');
+  }
+
   let whatsapp = whatsappDigitado;
 
   if (whatsapp.length > 0 && !whatsapp.startsWith('55')) {
@@ -82,10 +91,29 @@ export async function POST(request) {
        titulo_publico,
        subtitulo_publico,
        tema_cor,
+       tema_cor_secundaria,
+       usar_gradiente,
+       horario_funcionamento,
+       opcoes_pedido,
        ativo,
        bloqueado
      )
-     VALUES ($1, $2, $3, $4, $5, $1, 'Catálogo digital', '#0f766e', true, false)
+     VALUES (
+       $1,
+       $2,
+       $3,
+       $4,
+       $5,
+       $1,
+       'Catálogo digital',
+       '#0f766e',
+       '#14b8a6',
+       true,
+       '{}'::jsonb,
+       '{"retirada":true,"entrega":true,"pix":true,"dinheiro":true,"cartao":true}'::jsonb,
+       true,
+       false
+     )
      ON CONFLICT (slug) DO UPDATE SET
        nome = EXCLUDED.nome,
        whatsapp = EXCLUDED.whatsapp,
@@ -111,12 +139,7 @@ export async function POST(request) {
        ativo
      )
      VALUES ($1, $2, $3, $4, 'empresa_admin', true)
-     ON CONFLICT (email) DO UPDATE SET
-       empresa_id = EXCLUDED.empresa_id,
-       nome = EXCLUDED.nome,
-       senha_hash = EXCLUDED.senha_hash,
-       papel = 'empresa_admin',
-       ativo = true`,
+     ON CONFLICT (email) DO NOTHING`,
     [empresa.id, usuarioNome, usuarioEmail, senhaHash]
   );
 

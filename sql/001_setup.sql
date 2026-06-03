@@ -4,6 +4,10 @@ CREATE TABLE IF NOT EXISTS food_empresas (
   slug TEXT NOT NULL UNIQUE,
   whatsapp TEXT,
   instagram_url TEXT,
+  tema_cor_secundaria TEXT DEFAULT '#14b8a6',
+  usar_gradiente BOOLEAN NOT NULL DEFAULT true,
+  horario_funcionamento JSONB NOT NULL DEFAULT '{}'::jsonb,
+  opcoes_pedido JSONB NOT NULL DEFAULT '{"retirada":true,"entrega":true,"pix":true,"dinheiro":true,"cartao":true}'::jsonb,
   logo_url TEXT,
   ativo BOOLEAN NOT NULL DEFAULT true,
   criado_em TIMESTAMP DEFAULT NOW(),
@@ -29,6 +33,8 @@ CREATE TABLE IF NOT EXISTS food_produtos (
   descricao TEXT,
   preco NUMERIC NOT NULL DEFAULT 0,
   imagem_url TEXT,
+  destaque BOOLEAN NOT NULL DEFAULT false,
+  destaque_ordem INTEGER NOT NULL DEFAULT 0,
   aliases JSONB NOT NULL DEFAULT '[]'::jsonb,
   ativo BOOLEAN NOT NULL DEFAULT true,
   criado_em TIMESTAMP DEFAULT NOW(),
@@ -38,6 +44,16 @@ CREATE TABLE IF NOT EXISTS food_produtos (
 
 ALTER TABLE food_empresas
 ADD COLUMN IF NOT EXISTS instagram_url TEXT;
+
+ALTER TABLE food_empresas
+ADD COLUMN IF NOT EXISTS tema_cor_secundaria TEXT DEFAULT '#14b8a6',
+ADD COLUMN IF NOT EXISTS usar_gradiente BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN IF NOT EXISTS horario_funcionamento JSONB NOT NULL DEFAULT '{}'::jsonb,
+ADD COLUMN IF NOT EXISTS opcoes_pedido JSONB NOT NULL DEFAULT '{"retirada":true,"entrega":true,"pix":true,"dinheiro":true,"cartao":true}'::jsonb;
+
+ALTER TABLE food_produtos
+ADD COLUMN IF NOT EXISTS destaque BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN IF NOT EXISTS destaque_ordem INTEGER NOT NULL DEFAULT 0;
 
 INSERT INTO food_empresas (nome, slug, whatsapp, ativo)
 VALUES ('Savore Gourmet', 'savore', '556199327471', true)
