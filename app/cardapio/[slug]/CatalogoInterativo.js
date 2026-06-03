@@ -304,12 +304,7 @@ function montarMensagem(empresa, itens) {
           <p>{subtitulo}</p>
         </div>
       </section>
-
-      <section className="catalog-intro shell catalog-intro-modern">
-        <h2>Escolha. Envie. Aproveite.</h2>
-        
-      </section>
-
+          
       {produtosDestaque.length > 0 ? (
         <section className="catalog-highlights shell">
           <div className="section-title-row">
