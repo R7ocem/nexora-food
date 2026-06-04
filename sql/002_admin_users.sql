@@ -43,10 +43,4 @@ SELECT
   true
 FROM empresa e
 ON CONFLICT (email)
-DO UPDATE SET
-  empresa_id = EXCLUDED.empresa_id,
-  nome = EXCLUDED.nome,
-  senha_hash = EXCLUDED.senha_hash,
-  papel = EXCLUDED.papel,
-  ativo = EXCLUDED.ativo,
-  atualizado_em = NOW();
+DO NOTHING;

@@ -67,6 +67,15 @@ export async function POST(request) {
     redirect('/admin?erro=email');
   }
 
+  const slugExistente = await query(
+    `SELECT id FROM food_empresas WHERE slug = $1 LIMIT 1`,
+    [slug]
+  );
+
+  if (slugExistente.rows.length > 0) {
+    redirect('/admin?erro=slug');
+  }
+
   let whatsapp = whatsappDigitado;
 
   if (whatsapp.length > 0 && !whatsapp.startsWith('55')) {
@@ -114,14 +123,6 @@ export async function POST(request) {
        true,
        false
      )
-     ON CONFLICT (slug) DO UPDATE SET
-       nome = EXCLUDED.nome,
-       whatsapp = EXCLUDED.whatsapp,
-       segmento = EXCLUDED.segmento,
-       tipo_oferta = EXCLUDED.tipo_oferta,
-       titulo_publico = EXCLUDED.titulo_publico,
-       subtitulo_publico = EXCLUDED.subtitulo_publico,
-       ativo = true
      RETURNING id, slug`,
     [nome, slug, whatsapp, segmentoFinal, tipoOfertaFinal]
   );

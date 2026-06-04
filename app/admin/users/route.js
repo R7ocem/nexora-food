@@ -38,6 +38,18 @@ export async function POST(request) {
     redirect('/admin');
   }
 
+  const emailExistente = await query(
+    `SELECT id
+     FROM food_usuarios
+     WHERE email = $1
+     LIMIT 1`,
+    [email]
+  );
+
+  if (emailExistente.rows.length > 0) {
+    redirect(`/admin?slug=${empresaAtual.slug}&erro=email`);
+  }
+
   const senhaHash = hashPassword(senha);
 
   await query(
@@ -49,13 +61,7 @@ export async function POST(request) {
        papel,
        ativo
      )
-     VALUES ($1, $2, $3, $4, 'empresa_admin', true)
-     ON CONFLICT (email) DO UPDATE SET
-       empresa_id = EXCLUDED.empresa_id,
-       nome = EXCLUDED.nome,
-       senha_hash = EXCLUDED.senha_hash,
-       papel = 'empresa_admin',
-       ativo = true`,
+     VALUES ($1, $2, $3, $4, 'empresa_admin', true)`,
     [
       empresaId,
       nome,

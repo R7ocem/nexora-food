@@ -144,7 +144,7 @@ async function getAdminData(user, selectedSlug) {
        p.categoria_id,
        c.nome AS categoria_nome
      FROM food_produtos p
-     LEFT JOIN food_categorias c ON c.id = p.categoria_id
+     LEFT JOIN food_categorias c ON c.id = p.categoria_id AND c.empresa_id = p.empresa_id
      WHERE p.empresa_id = $1
      ORDER BY p.ativo DESC, c.ordem, p.nome`,
     [empresa.id]
@@ -322,6 +322,10 @@ export default async function AdminPage({ searchParams }) {
 
           {searchParams?.erro === 'email' ? (
             <p className="error-text">Este email já está cadastrado.</p>
+          ) : null}
+
+          {searchParams?.erro === 'slug' ? (
+            <p className="error-text">Este link de catálogo já está em uso.</p>
           ) : null}
 
           <form action="/admin/companies" method="post" className="admin-form">
