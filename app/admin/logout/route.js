@@ -1,7 +1,11 @@
 import { redirect } from 'next/navigation';
-import { clearAdminSession } from '../../../lib/auth';
+import { clearAdminSession, isTrustedAdminRequest } from '../../../lib/auth';
 
-export async function POST() {
+export async function POST(request) {
+  if (!isTrustedAdminRequest(request)) {
+    redirect('/admin');
+  }
+
   clearAdminSession();
   redirect('/admin');
 }

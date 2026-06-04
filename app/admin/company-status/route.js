@@ -1,8 +1,12 @@
 import { redirect } from 'next/navigation';
 import { query } from '../../../lib/db';
-import { getCurrentUser } from '../../../lib/auth';
+import { getCurrentUser, isTrustedAdminRequest } from '../../../lib/auth';
 
 export async function POST(request) {
+  if (!isTrustedAdminRequest(request)) {
+    redirect('/admin');
+  }
+
   const user = await getCurrentUser();
 
   if (!user || user.papel !== 'nexora_admin') {

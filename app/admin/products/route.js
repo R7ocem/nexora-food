@@ -1,7 +1,7 @@
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { redirect } from 'next/navigation';
 import { query } from '../../../lib/db';
-import { getCurrentUser } from '../../../lib/auth';
+import { getCurrentUser, isTrustedAdminRequest } from '../../../lib/auth';
 
 export const runtime = 'nodejs';
 
@@ -105,6 +105,10 @@ function numero(valor) {
 }
 
 export async function POST(request) {
+  if (!isTrustedAdminRequest(request)) {
+    redirect('/admin');
+  }
+
   const user = await getCurrentUser();
 
   if (!user) {

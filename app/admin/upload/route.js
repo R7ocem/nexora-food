@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { getCurrentUser } from '../../../lib/auth';
+import { getCurrentUser, isTrustedAdminRequest } from '../../../lib/auth';
 
 export const runtime = 'nodejs';
 
@@ -24,6 +24,10 @@ function limparNome(nome) {
 }
 
 export async function POST(request) {
+  if (!isTrustedAdminRequest(request)) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
+
   const user = await getCurrentUser();
 
   if (!user) {
