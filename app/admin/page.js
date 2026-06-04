@@ -73,6 +73,7 @@ async function getAdminData(user, selectedSlug) {
        nome,
        slug,
        whatsapp,
+       email_empresa,
        ativo,
        bloqueado,
        bloqueado_motivo,
@@ -347,6 +348,13 @@ export default async function AdminPage({ searchParams }) {
             As senhas não podem ser visualizadas. Para ajudar um cliente, defina uma senha temporária.
           </p>
 
+          <div className="company-summary">
+            <div>
+              <span>Link do catalogo</span>
+              <strong>{linkPublico}</strong>
+            </div>
+          </div>
+
           {usuarios.length > 0 ? (
             <div className="admin-products editable-products">
               {usuarios.map((usuario) => (
@@ -413,7 +421,7 @@ export default async function AdminPage({ searchParams }) {
             </label>
 
             <button className="primary-button" type="submit">
-              Criar acesso para esta empresa
+              Criar acesso
             </button>
           </form>
         </section>
@@ -549,10 +557,6 @@ export default async function AdminPage({ searchParams }) {
           <strong>{tiposOferta[empresa.tipo_oferta] || empresa.tipo_oferta}</strong>
         </div>
     
-        <div>
-          <span>Link público</span>
-          <strong>{linkPublico}</strong>
-        </div>
       </div>
 
       {searchParams?.erro === 'whatsapp' ? (
@@ -589,6 +593,16 @@ export default async function AdminPage({ searchParams }) {
             maxLength="15"
             placeholder="DDD + numero. Ex: 61999999999"
             required
+          />
+        </label>
+
+        <label>
+          Email da empresa
+          <input
+            name="email_empresa"
+            type="email"
+            defaultValue={empresa.email_empresa || ''}
+            placeholder="contato@empresa.com"
           />
         </label>
     
