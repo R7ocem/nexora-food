@@ -1,12 +1,16 @@
 import { redirect } from 'next/navigation';
 import { query } from '../../../lib/db';
-import { getCurrentUser, hashPassword, verifyPassword } from '../../../lib/auth';
+import { getCurrentUser, hashPassword, isTrustedAdminRequest, verifyPassword } from '../../../lib/auth';
 
 function texto(valor) {
   return String(valor || '').trim();
 }
 
 export async function POST(request) {
+  if (!isTrustedAdminRequest(request)) {
+    redirect('/admin');
+  }
+
   const user = await getCurrentUser();
 
   if (!user) {

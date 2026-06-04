@@ -158,7 +158,7 @@ async function getAdminData(user, selectedSlug) {
   };
 }
 
-function Login({ erro }) {
+function Login({ erro, limite }) {
   return (
     <main className="shell admin-shell">
       <section className="panel">
@@ -166,6 +166,10 @@ function Login({ erro }) {
         <p className="muted">Entre para gerenciar empresas, produtos, serviços e catálogos.</p>
 
         {erro ? <p className="error-text">Email ou senha inválidos.</p> : null}
+
+        {limite ? (
+          <p className="error-text">Muitas tentativas. Aguarde alguns minutos e tente novamente.</p>
+        ) : null}
 
         <form action="/admin/login" method="post" className="admin-form">
           <label>
@@ -210,9 +214,10 @@ function EmpresaBloqueada({ empresa }) {
 export default async function AdminPage({ searchParams }) {
   const user = await getCurrentUser();
   const erro = searchParams?.erro === 'login';
+  const limite = searchParams?.erro === 'limite';
 
   if (!user) {
-    return <Login erro={erro} />;
+    return <Login erro={erro} limite={limite} />;
   }
 
   const selectedSlug = user.papel === 'nexora_admin' ? searchParams?.slug : null;

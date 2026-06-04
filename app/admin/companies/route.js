@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { query } from '../../../lib/db';
-import { getCurrentUser, hashPassword } from '../../../lib/auth';
+import { getCurrentUser, hashPassword, isTrustedAdminRequest } from '../../../lib/auth';
 
 const segmentosPermitidos = [
   'alimentacao',
@@ -36,6 +36,10 @@ function normalizarSlug(valor) {
 }
 
 export async function POST(request) {
+  if (!isTrustedAdminRequest(request)) {
+    redirect('/admin');
+  }
+
   const user = await getCurrentUser();
 
   if (!user || user.papel !== 'nexora_admin') {
