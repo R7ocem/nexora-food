@@ -1,8 +1,9 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { query } from '../../../lib/db';
 import { getCurrentUser, hashPassword, isTrustedAdminRequest } from '../../../lib/auth';
 import { rotuloCatalogo } from '../../../lib/catalog';
-import { emailValido, normalizarEmail, normalizarWhatsapp } from '../../../lib/validation';
+import { documentoValido, emailValido, normalizarDocumento, normalizarEmail, normalizarWhatsapp } from '../../../lib/validation';
 
 const segmentosPermitidos = [
   'alimentacao',
@@ -37,6 +38,29 @@ function normalizarSlug(valor) {
     .replace(/^-+|-+$/g, '');
 }
 
+function salvarRascunhoEmpresa(dados) {
+  cookies().set('nexora_company_draft', JSON.stringify(dados), {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/admin',
+    maxAge: 600
+  });
+}
+
+function limparRascunhoEmpresa() {
+  cookies().set('nexora_company_draft', '', {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/admin',
+    maxAge: 0
+  });
+}
+
+function redirecionarComErro(erro, dados) {
+  salvarRascunhoEmpresa(dados);
+  redirect(`/admin?erro=${erro}`);
+}
+
 export async function POST(request) {
   if (!isTrustedAdminRequest(request)) {
     redirect('/admin');
@@ -56,23 +80,41 @@ export async function POST(request) {
   const segmento = texto(formData.get('segmento'));
   const tipoOferta = texto(formData.get('tipo_oferta'));
   const proprietarioNome = texto(formData.get('proprietario_nome'));
-  const cpfCnpj = texto(formData.get('documento'));
+  const cpfCnpj = normalizarDocumento(formData.get('documento'));
   const endereco = texto(formData.get('endereco'));
+  const cidade = texto(formData.get('cidade'));
+  const estado = texto(formData.get('estado')).toUpperCase();
 
   const usuarioNome = texto(formData.get('usuario_nome')) || proprietarioNome;
   const usuarioEmail = normalizarEmail(formData.get('usuario_email'));
   const usuarioSenha = texto(formData.get('usuario_senha'));
+  const rascunho = {
+    nome,
+    slug,
+    proprietario_nome: proprietarioNome,
+    documento: cpfCnpj,
+    endereco,
+    cidade,
+    estado,
+    whatsapp: texto(formData.get('whatsapp')),
+    usuario_email: usuarioEmail,
+    usuario_senha: usuarioSenha
+  };
 
-  if (!nome || !slug || !proprietarioNome || !cpfCnpj || !endereco || !usuarioNome || !usuarioEmail || !usuarioSenha) {
-    redirect('/admin?erro=empresa');
+  if (!nome || !slug || !proprietarioNome || !cpfCnpj || !endereco || !cidade || !estado || !usuarioNome || !usuarioEmail || !usuarioSenha) {
+    redirecionarComErro('empresa', rascunho);
+  }
+
+  if (!documentoValido(cpfCnpj)) {
+    redirecionarComErro('documento', rascunho);
   }
 
   if (!emailValido(usuarioEmail)) {
-    redirect('/admin?erro=email_invalido');
+    redirecionarComErro('email_invalido', rascunho);
   }
 
   if (!whatsapp) {
-    redirect('/admin?erro=whatsapp');
+    redirecionarComErro('whatsapp', rascunho);
   }
 
   const emailExistente = await query(
@@ -81,7 +123,7 @@ export async function POST(request) {
   );
 
   if (emailExistente.rows.length > 0) {
-    redirect('/admin?erro=email');
+    redirecionarComErro('email', rascunho);
   }
 
   const slugExistente = await query(
@@ -90,7 +132,7 @@ export async function POST(request) {
   );
 
   if (slugExistente.rows.length > 0) {
-    redirect('/admin?erro=slug');
+    redirecionarComErro('slug', rascunho);
   }
 
   const segmentoFinal = segmentosPermitidos.includes(segmento)
@@ -110,6 +152,8 @@ export async function POST(request) {
        proprietario_nome,
        cpf_cnpj,
        endereco,
+       cidade,
+       estado,
        segmento,
        tipo_oferta,
        titulo_publico,
@@ -130,6 +174,8 @@ export async function POST(request) {
        $8,
        $9,
        $10,
+       $11,
+       $12,
        $4,
        $5,
        $1,
@@ -153,7 +199,9 @@ export async function POST(request) {
       rotuloCatalogo(segmentoFinal),
       proprietarioNome,
       cpfCnpj,
-      endereco
+      endereco,
+      cidade,
+      estado
     ]
   );
 
@@ -174,5 +222,6 @@ export async function POST(request) {
     [empresa.id, usuarioNome, usuarioEmail, senhaHash]
   );
 
+  limparRascunhoEmpresa();
   redirect(`/admin?slug=${empresa.slug}`);
 }

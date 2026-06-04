@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS food_empresas (
   proprietario_nome TEXT,
   cpf_cnpj TEXT,
   endereco TEXT,
+  cidade TEXT,
+  estado TEXT,
   instagram_url TEXT,
   segmento TEXT NOT NULL DEFAULT 'outros',
   tipo_oferta TEXT NOT NULL DEFAULT 'produtos',
@@ -74,7 +76,9 @@ ADD COLUMN IF NOT EXISTS email_empresa TEXT;
 ALTER TABLE food_empresas
 ADD COLUMN IF NOT EXISTS proprietario_nome TEXT,
 ADD COLUMN IF NOT EXISTS cpf_cnpj TEXT,
-ADD COLUMN IF NOT EXISTS endereco TEXT;
+ADD COLUMN IF NOT EXISTS endereco TEXT,
+ADD COLUMN IF NOT EXISTS cidade TEXT,
+ADD COLUMN IF NOT EXISTS estado TEXT;
 
 ALTER TABLE food_empresas
 ADD COLUMN IF NOT EXISTS segmento TEXT NOT NULL DEFAULT 'outros',

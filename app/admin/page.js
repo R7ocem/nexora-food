@@ -2,6 +2,7 @@ import { query } from '../../lib/db';
 import { money } from '../../lib/format';
 import { getCurrentUser } from '../../lib/auth';
 import { caminhoCatalogo } from '../../lib/catalog';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -41,6 +42,50 @@ const diasSemana = [
   ['5', 'Sexta'],
   ['6', 'Sábado']
 ];
+
+const estadosBrasil = [
+  'AC',
+  'AL',
+  'AP',
+  'AM',
+  'BA',
+  'CE',
+  'DF',
+  'ES',
+  'GO',
+  'MA',
+  'MT',
+  'MS',
+  'MG',
+  'PA',
+  'PB',
+  'PR',
+  'PE',
+  'PI',
+  'RJ',
+  'RN',
+  'RS',
+  'RO',
+  'RR',
+  'SC',
+  'SP',
+  'SE',
+  'TO'
+];
+
+function getCompanyDraft(searchParams) {
+  if (!searchParams?.erro) return {};
+
+  const valor = cookies().get('nexora_company_draft')?.value;
+
+  if (!valor) return {};
+
+  try {
+    return JSON.parse(valor);
+  } catch {
+    return {};
+  }
+}
 
 function getHorariosFuncionamento(valor) {
   const horarios = valor && typeof valor === 'object' ? valor : {};
@@ -266,6 +311,7 @@ export default async function AdminPage({ searchParams }) {
   const linkPublico = caminhoCatalogo(empresa);
   const horariosFuncionamento = getHorariosFuncionamento(empresa.horario_funcionamento);
   const opcoesPedido = getOpcoesPedido(empresa.opcoes_pedido);
+  const companyDraft = getCompanyDraft(searchParams);
 
   return (
     <main className="shell admin-shell">
@@ -443,6 +489,10 @@ export default async function AdminPage({ searchParams }) {
             <p className="error-text">Informe um WhatsApp valido com DDD. Exemplo: 61999999999.</p>
           ) : null}
 
+          {searchParams?.erro === 'documento' ? (
+            <p className="error-text">Informe CPF com 11 digitos ou CNPJ com 14 digitos.</p>
+          ) : null}
+
           {searchParams?.erro === 'empresa' ? (
             <p className="error-text">Preencha todos os dados obrigatorios da empresa.</p>
           ) : null}
@@ -450,27 +500,54 @@ export default async function AdminPage({ searchParams }) {
           <form action="/admin/companies" method="post" className="admin-form">
             <label>
               Nome da empresa
-              <input name="nome" placeholder="Nome do cliente" required />
+              <input name="nome" defaultValue={companyDraft.nome || ''} placeholder="Nome do cliente" required />
             </label>
 
             <label>
-              Link do catálogo
-              <input name="slug" placeholder="ex: viva-festas" />
+              Link do catalogo
+              <input name="slug" defaultValue={companyDraft.slug || ''} placeholder="ex: viva-festas" />
             </label>
 
             <label>
               Nome do Proprietario da empresa
-              <input name="proprietario_nome" placeholder="Nome completo" required />
+              <input name="proprietario_nome" defaultValue={companyDraft.proprietario_nome || ''} placeholder="Nome completo" required />
             </label>
 
             <label>
               CPF/CNPJ
-              <input name="documento" placeholder="CPF ou CNPJ" required />
+              <input
+                name="documento"
+                defaultValue={companyDraft.documento || ''}
+                inputMode="numeric"
+                minLength="11"
+                maxLength="18"
+                pattern="(?:\D*\d\D*){11}|(?:\D*\d\D*){14}"
+                title="Informe CPF com 11 digitos ou CNPJ com 14 digitos."
+                placeholder="CPF ou CNPJ"
+                required
+              />
             </label>
 
             <label>
               Endereco
-              <input name="endereco" placeholder="Endereco da empresa" required />
+              <input name="endereco" defaultValue={companyDraft.endereco || ''} placeholder="Rua, numero e bairro" required />
+            </label>
+
+            <label>
+              Cidade
+              <input name="cidade" defaultValue={companyDraft.cidade || ''} placeholder="Cidade" required />
+            </label>
+
+            <label>
+              Estado
+              <select name="estado" defaultValue={companyDraft.estado || ''} required>
+                <option value="">UF</option>
+                {estadosBrasil.map((estado) => (
+                  <option key={estado} value={estado}>
+                    {estado}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label>
@@ -480,6 +557,9 @@ export default async function AdminPage({ searchParams }) {
                 inputMode="numeric"
                 minLength="10"
                 maxLength="15"
+                pattern="\d{10,15}"
+                title="Informe apenas numeros, com DDD. Exemplo: 61999999999"
+                defaultValue={companyDraft.whatsapp || ''}
                 placeholder="DDD + numero. Ex: 61999999999"
                 required
               />
@@ -490,16 +570,16 @@ export default async function AdminPage({ searchParams }) {
               <input
                 name="usuario_email"
                 type="email"
+                defaultValue={companyDraft.usuario_email || ''}
                 placeholder="cliente@email.com"
                 required
               />
             </label>
             
             <label>
-              Senha temporária
-              <input name="usuario_senha" type="text" placeholder="Senha inicial do cliente" required />
+              Senha temporaria
+              <input name="usuario_senha" type="text" defaultValue={companyDraft.usuario_senha || ''} placeholder="Senha inicial do cliente" required />
             </label>
-            
             <button className="primary-button" type="submit">
               Criar empresa e acesso
             </button>
