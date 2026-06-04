@@ -32,7 +32,15 @@ export async function POST(request) {
 
   const formData = await request.formData();
   const file = formData.get('file');
-  const empresaId = String(formData.get('empresa_id') || user.empresa_id || 'geral');
+  const empresaId = Number(formData.get('empresa_id') || user.empresa_id);
+
+  if (!empresaId) {
+    return NextResponse.json({ error: 'empresa_required' }, { status: 400 });
+  }
+
+  if (user.papel !== 'nexora_admin' && user.empresa_id !== empresaId) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
 
   if (!file || typeof file === 'string') {
     return NextResponse.json({ error: 'file_required' }, { status: 400 });

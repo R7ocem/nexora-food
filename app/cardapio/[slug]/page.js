@@ -68,7 +68,7 @@ async function getCardapio(slug) {
        p.apelidos,
        c.nome AS categoria_nome
      FROM food_produtos p
-     LEFT JOIN food_categorias c ON c.id = p.categoria_id
+     LEFT JOIN food_categorias c ON c.id = p.categoria_id AND c.empresa_id = p.empresa_id
      WHERE p.empresa_id = $1
        AND p.ativo = true
      ORDER BY c.ordem, p.nome`,

@@ -14,6 +14,18 @@ const s3 = new S3Client({
   }
 });
 
+const tiposItemPermitidos = [
+  'produto',
+  'servico',
+  'pacote'
+];
+
+const tiposPrecoPermitidos = [
+  'fixo',
+  'a_partir_de',
+  'sob_consulta'
+];
+
 function limparNomeArquivo(nome) {
   return String(nome || 'arquivo')
     .toLowerCase()
@@ -22,56 +34,6 @@ function limparNomeArquivo(nome) {
     .replace(/[^a-z0-9.]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
-}
-
-async function enviarFotoParaR2(file, empresaId) {
-  if (!file || typeof file === 'string' || file.size === 0) return null;
-
-function keyDoR2PelaUrl(url) {
-  const publicUrl = process.env.R2_PUBLIC_URL;
-
-  if (!url || !publicUrl || !url.startsWith(publicUrl)) {
-    return null;
-  }
-
-  return url.slice(publicUrl.length + 1);
-}
-
-async function excluirFotoDoR2(url) {
-  const key = keyDoR2PelaUrl(url);
-
-  if (!key) return;
-
-  await s3.send(
-    new DeleteObjectCommand({
-      Bucket: process.env.R2_BUCKET,
-      Key: key
-    })
-  );
-}
-  
-  if (!file.type.startsWith('image/')) {
-    throw new Error('invalid_file_type');
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    throw new Error('file_too_large');
-  }
-
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const nomeLimpo = limparNomeArquivo(file.name);
-  const key = `empresas/${empresaId}/${Date.now()}-${nomeLimpo}`;
-
-  await s3.send(
-    new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET,
-      Key: key,
-      Body: bytes,
-      ContentType: file.type
-    })
-  );
-
-  return `${process.env.R2_PUBLIC_URL}/${key}`;
 }
 
 function keyDoR2PelaUrl(url) {
@@ -101,17 +63,32 @@ async function excluirFotoDoR2(url) {
   }
 }
 
-const tiposItemPermitidos = [
-  'produto',
-  'servico',
-  'pacote'
-];
+async function enviarFotoParaR2(file, empresaId) {
+  if (!file || typeof file === 'string' || file.size === 0) return null;
 
-const tiposPrecoPermitidos = [
-  'fixo',
-  'a_partir_de',
-  'sob_consulta'
-];
+  if (!file.type.startsWith('image/')) {
+    throw new Error('invalid_file_type');
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error('file_too_large');
+  }
+
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const nomeLimpo = limparNomeArquivo(file.name);
+  const key = `empresas/${empresaId}/${Date.now()}-${nomeLimpo}`;
+
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET,
+      Key: key,
+      Body: bytes,
+      ContentType: file.type
+    })
+  );
+
+  return `${process.env.R2_PUBLIC_URL}/${key}`;
+}
 
 function texto(valor) {
   return String(valor || '').trim();
@@ -147,72 +124,8 @@ export async function POST(request) {
     .replace(/\s+/g, '_');
 
   const nome = texto(formData.get('nome'));
-  const categoriaIdRaw = texto(formData.get('categoria_id'));
-  const categoriaId = categoriaIdRaw ? Number(categoriaIdRaw) : null;
-  const tipoItemRaw = texto(formData.get('tipo_item'));
-  const tipoPrecoRaw = texto(formData.get('tipo_preco'));
 
-  const tipoItem = ['produto', 'servico', 'pacote'].includes(tipoItemRaw)
-  ? tipoItemRaw
-  : 'produto';
-
-  const tipoPreco = ['fixo', 'a_partir_de', 'sob_consulta'].includes(tipoPrecoRaw)
-  ? tipoPrecoRaw
-  : 'fixo';
-
-  const preco = tipoPreco === 'sob_consulta' ? 0 : numero(formData.get('preco'));
-  
-  if (tipoPreco !== 'sob_consulta' && preco <= 0) {
-  const empresa = await query(
-    `SELECT slug FROM food_empresas WHERE id = $1 LIMIT 1`,
-    [empresaId]
-  );
-
-  const slug = empresa.rows[0]?.slug;
-
-  redirect(slug ? `/admin?slug=${slug}&erro=preco` : '/admin?erro=preco');
-}
-  
-  let imagemUrl = texto(formData.get('imagem_url'));
-  const imagemAnterior = imagemUrl;
-  const removerImagem = formData.get('remover_imagem') === '1';
-  const foto = formData.get('foto');
-  
-  if (removerImagem) {
-    imagemUrl = '';
-  
-    if (imagemAnterior) {
-      await excluirFotoDoR2(imagemAnterior);
-    }
-  } else {
-    const fotoUrl = await enviarFotoParaR2(foto, empresaId);
-  
-    if (fotoUrl) {
-      imagemUrl = fotoUrl;
-  
-      if (imagemAnterior) {
-        await excluirFotoDoR2(imagemAnterior);
-      }
-    }
-  }
-  const descricao = texto(formData.get('descricao'));
-  const apelidos = texto(formData.get('apelidos'));
-  const ativo = formData.get('ativo') === 'on';
-  const destaque = formData.get('destaque') === 'on';
-  const destaqueOrdem = Math.min(6, Math.max(0, Math.round(numero(formData.get('destaque_ordem')))));
-
-if (!apelidos) {
-   const empresa = await query(
-    `SELECT slug FROM food_empresas WHERE id = $1 LIMIT 1`,
-    [empresaId]
-  );
-
-  const slug = empresa.rows[0]?.slug;
-
-  redirect(slug ? `/admin?slug=${slug}&erro=apelidos` : '/admin?erro=apelidos');
-}
-
-   if (!empresaId || !codigo || !nome) {
+  if (!empresaId || !codigo || !nome) {
     redirect('/admin');
   }
 
@@ -232,6 +145,67 @@ if (!apelidos) {
 
   if (!empresaAtual) {
     redirect('/admin');
+  }
+
+  const categoriaIdRaw = texto(formData.get('categoria_id'));
+  let categoriaId = categoriaIdRaw ? Number(categoriaIdRaw) : null;
+
+  if (categoriaId) {
+    const categoria = await query(
+      `SELECT id
+       FROM food_categorias
+       WHERE id = $1
+         AND empresa_id = $2
+       LIMIT 1`,
+      [categoriaId, empresaId]
+    );
+
+    if (!categoria.rows[0]) {
+      categoriaId = null;
+    }
+  }
+
+  const tipoItemRaw = texto(formData.get('tipo_item'));
+  const tipoPrecoRaw = texto(formData.get('tipo_preco'));
+  const tipoItem = tiposItemPermitidos.includes(tipoItemRaw) ? tipoItemRaw : 'produto';
+  const tipoPreco = tiposPrecoPermitidos.includes(tipoPrecoRaw) ? tipoPrecoRaw : 'fixo';
+  const preco = tipoPreco === 'sob_consulta' ? 0 : numero(formData.get('preco'));
+
+  if (tipoPreco !== 'sob_consulta' && preco <= 0) {
+    redirect(`/admin?slug=${empresaAtual.slug}&erro=preco`);
+  }
+
+  const descricao = texto(formData.get('descricao'));
+  const apelidos = texto(formData.get('apelidos'));
+  const ativo = formData.get('ativo') === 'on';
+  const destaque = formData.get('destaque') === 'on';
+  const destaqueOrdem = Math.min(6, Math.max(0, Math.round(numero(formData.get('destaque_ordem')))));
+
+  if (!apelidos) {
+    redirect(`/admin?slug=${empresaAtual.slug}&erro=apelidos`);
+  }
+
+  let imagemUrl = texto(formData.get('imagem_url'));
+  const imagemAnterior = imagemUrl;
+  const removerImagem = formData.get('remover_imagem') === '1';
+  const foto = formData.get('foto');
+
+  if (removerImagem) {
+    imagemUrl = '';
+
+    if (imagemAnterior) {
+      await excluirFotoDoR2(imagemAnterior);
+    }
+  } else {
+    const fotoUrl = await enviarFotoParaR2(foto, empresaId);
+
+    if (fotoUrl) {
+      imagemUrl = fotoUrl;
+
+      if (imagemAnterior) {
+        await excluirFotoDoR2(imagemAnterior);
+      }
+    }
   }
 
   if (produtoId) {
